@@ -5,35 +5,36 @@
 (in-package :motion)
 
 (defclass polygon ()
-  ((points :initform '()
+  ((x :initform 0
+      :initarg :x
+      :accessor x)
+   (y :initform 0
+      :initarg :y
+      :accessor y)
+   (points :initform '()
            :initarg :points
            :accessor points)
-   (axes :initform '()
-         :reader axes)
-   (projections :initform '()
-                :reader projections)))
+   (axes :reader axes)))
 
 (defmethod project ((polygon polygon) (axis vec))
-  (with-slots (points) polygon
+  (with-slots (points x y) polygon
     (apply #'min-max
-           (mapcar (lambda (point)
-                     (dot-product point axis))
+           (mapcar (lambda (p) (dot (vec+ (vec x y) p) axis))
                    points))))
 
+(internal calc-axes)
 (defmethod calc-axes ((polygon polygon))
   (with-slots (points axes) polygon
+    (setf axes '())
     (loop with start = (car points)
-          for (a b) on points
-          until (null b)
-          collect (unit-vec a b) into result
-          finally (return (setf axes (push (unit-vec start a) result))))))
+          for (a b) on points until (null b)
+          do (pushnew (unit-vec a b) axes :test #'unit-vec=)
+          finally (pushnew (unit-vec a start) axes :test #'unit-vec=))))
 
-(defmethod calc-projections ((polygon polygon))
-  (with-slots (axes projections) polygon
-    (setf projections
-          (loop for axis in axes
-                collect (cons axis (project polygon axis))))))
+(defmethod initialize-instance :after ((polygon polygon) &key)
+  (calc-axes polygon))
 
 (defmethod collides-p ((a polygon) (b polygon))
-  (with-slots (points) a
-    ()))
+  (dolist (axis (union (axes a) (axes b) :test #'unit-vec=) nil)
+    (when (overlaps-p (project a axis) (project b axis))
+      (return-from collides-p t))))

@@ -84,7 +84,7 @@
         unless ,@predicate return nil
         finally (return t))))
 
-(define-vec-predicate vec-overlap-p (a b)
+(define-vec-predicate overlaps-p (a b)
   (or (<= (a a) (a b) (b a))
       (<= (a a) (b b) (b a))))
 
@@ -124,7 +124,7 @@
         when (> b (b result)) do (setf (b result) b)
         finally (return result)))
 
-(defmethod dot-product ((a vec) (b vec))
+(defmethod dot ((a vec) (b vec))
   (+ (* (x a) (x b))
      (* (y a) (y b))
      (if (= (check-vec-dimensions a b) 3)
@@ -136,6 +136,12 @@
   (let* ((delta (vec- b a))
          (length (sqrt (+ (expt (x delta) 2) (expt (y delta) 2)))))
     (vec (/ (x delta) length) (/ (y delta) length))))
+
+(defmethod unit-vec= ((a vec) &rest b)
+  (apply #'vec=
+         (mapcar (lambda (v) (if (and (< (x v) 0) (< (y v) 0)) (vec* -1 v) v))
+                 (cons a b))))
+
 
 (defmethod print-object ((object vec) stream)
   (format stream "#v(~a~@{~@[ ~a~]~})" (a object) (b object) (c object)))

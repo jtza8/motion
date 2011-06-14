@@ -53,10 +53,10 @@
     (assert-false (vec> a b))
     (assert-false (vec> c a))
     (assert-true (vec>= c a))
-    (assert-true (vec-overlap-p a d))
-    (assert-true (vec-overlap-p d c))
-    (assert-false (vec-overlap-p a b))
-    (assert-false (vec-overlap-p a b c d))))
+    (assert-true (overlaps-p a d))
+    (assert-true (overlaps-p d c))
+    (assert-false (overlaps-p a b))
+    (assert-false (overlaps-p a b c d))))
 
 (def-test-method test-min-max ((test vec-test))
   (let ((a #v(1 2)))
@@ -66,14 +66,14 @@
     (assert-true (vec= #v(1 2) a))
     (assert-true (vec= #v(-3 6) (min-max 2 3 -2 -3 6 5)))))
 
-(def-test-method test-dot-products ((test vec-test))
+(def-test-method test-dots ((test vec-test))
   (let ((a #v(1 2))
         (b #v(2 3))
         (c #v(2 3 4))
         (d #v(3 4 5)))
-    (assert-equal 8 (dot-product a b))
-    (assert-equal 38 (dot-product c d))
-    (assert-condition 'vec-error (dot-product a d))))
+    (assert-equal 8 (dot a b))
+    (assert-equal 38 (dot c d))
+    (assert-condition 'vec-error (dot a d))))
 
 
 (def-test-method test-unit-vec ((test vec-test))
@@ -81,4 +81,5 @@
         (b (unit-vec #v(-1 1) #v(1 -1)))) ; -45 degrees.
     (assert-condition 'vec-error (unit-vec #v(1 2 3) #v(2 4 5)))
     (assert-equal (x a) (y a))
-    (assert-equal (- (x b)) (y b))))
+    (assert-equal (- (x b)) (y b))
+    (assert-true (unit-vec= #v(-1 -1) #v(1 1)))))

@@ -5,7 +5,7 @@
 (asdf:defsystem "motion-tests"
   :author "Jens Thiede"
   :license "BSD-like"
-  :depends-on ("motion" "xlunit")
+  :depends-on ("motion" "xlunit" "click")
   :serial t
   :components ((:file "package")
                (:file "vec-test")
