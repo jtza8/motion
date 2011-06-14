@@ -8,4 +8,5 @@
   :depends-on ("motion" "xlunit")
   :serial t
   :components ((:file "package")
-               (:file "vec-test")))
+               (:file "vec-test")
+               (:file "polygon-test")))

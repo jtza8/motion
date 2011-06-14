@@ -8,5 +8,7 @@
   :depends-on ("meta-package")
   :serial t
   :components ((:file "package")
+               (:file "conditions")
                (:file "vec")
+               (:file "polygon")
                (:file "export")))
