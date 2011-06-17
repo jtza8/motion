@@ -83,3 +83,7 @@
     (assert-equal (x a) (y a))
     (assert-equal (- (x b)) (y b))
     (assert-true (unit-vec= #v(-1 -1) #v(1 1)))))
+
+(def-test-method test-vec-vector ((test vec-test))
+  (assert-equal '(1 2) (coerce (vec-vector #v(1 2)) 'list))
+  (assert-equal '(1 2 3) (coerce (vec-vector #v(1 2 3)) 'list)))

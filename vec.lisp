@@ -142,6 +142,13 @@
          (mapcar (lambda (v) (if (and (< (x v) 0) (< (y v) 0)) (vec* -1 v) v))
                  (cons a b))))
 
+(defmethod vec-vector ((vec vec))
+  (let ((result (make-array 3 :element-type 'vec :fill-pointer 0)))
+    (vector-push (a vec) result)
+    (vector-push (b vec) result)
+    (unless (null (c vec))
+      (vector-push (c vec) result))
+    result))
 
 (defmethod print-object ((object vec) stream)
   (format stream "#v(~a~@{~@[ ~a~]~})" (a object) (b object) (c object)))

@@ -9,4 +9,5 @@
   :serial t
   :components ((:file "package")
                (:file "vec-test")
+               (:file "polygon-igo")
                (:file "polygon-test")))
