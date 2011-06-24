@@ -84,9 +84,11 @@
         unless ,@predicate return nil
         finally (return t))))
 
-(define-vec-predicate overlaps-p (a b)
-  (or (<= (a a) (a b) (b a))
-      (<= (a a) (b b) (b a))))
+(defmethod overlap ((a vec) (b vec))
+  (cond ((<= (a a) (a b) (b b) (b a)) (- (b b) (a b)))
+        ((<= (a b) (a a) (b a) (b b)) (- (b a) (a a)))
+        ((< (a a) (a b)) (- (b a) (a b)))
+        ((< (a b) (a a)) (- (b b) (a a)))))
 
 (define-vec-predicate vec= (a b c)
   (and (= (a a) (a b))

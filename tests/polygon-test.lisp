@@ -4,60 +4,54 @@
 
 (in-package :motion)
 
-(defvar *test-polygon-a*)
-(defvar *test-polygon-b*)
-
 (defclass polygon-test (test-case)
   ())
 
+(defun dump-to-string (object &optional name)
+  (format nil "~%~a"
+          (with-output-to-string (out)
+            (unless (null name)
+              (format out "For ~a:~%" name))
+            (describe object out))))
+
 (defmethod set-up ((test polygon-test))
-  (setf *test-polygon-a*
-        (make-instance 'polygon
-                       :points '(#v(10 22) #v(54 43) #v(63 32) #v(12 9))))
-  (setf *test-polygon-b*
-        (make-instance 'polygon :x 100 :y 100
-                       :points '(#v(2 2) #v(10 50) #v(60 50) #v(50 2)))))
+  (declare (ignore test))
+  (reset-test-polys))
 
-(defmacro assert-equality (test expected actual)
-  (let ((expected-var (gensym))
-        (actual-var (gensym)))
-    `(let ((,expected-var ,expected)
-           (,actual-var ,actual))
-       (assert-true (,test ,expected-var ,actual-var)
-                    (format nil "Expected ~a but got ~a."
-                            ,expected-var ,actual-var)))))
-
-(def-test-method test-projection ((test polygon-test))
-  (assert-equality vec= #v(10 63) (project *test-polygon-a* #v(1 0)))
-  (assert-equality vec= #v(9 43) (project *test-polygon-a* #v(0 1)))
-  (assert-equality vec= #v(14.847 68.579)
-                   (project *test-polygon-a* #v(0.707 0.707)))
-  (setf (x *test-polygon-a*) 100)
-  (assert-equality vec= #v(110 163) (project *test-polygon-a* #v(1 0))))
-
-(def-test-method test-calc-axes ((test polygon-test))
-  (let ((axes '(#v(-0.9883717 -0.15205719) #v(0.41110775 -0.91158676)
-                #v(0.7739573 0.6332378) #v(-0.4307296 0.9024811))))
-    (loop for a in axes
-          for b in (axes *test-polygon-a*)
-          do (assert-equality vec= a b))))
+(def-test-method test-project ((test polygon-test))
+  (assert-true (vec= (project *poly-a* #v(-0.414 0.910))
+                     #v(-4.16 25.64))))
 
 (def-test-method test-collides-p ((test polygon-test))
-  (setf (x *test-polygon-a*) 0
-        (y *test-polygon-a*) 0
-        (x *test-polygon-b*) 0
-        (y *test-polygon-b*) 0)
-  (assert-true (collides-p *test-polygon-a* *test-polygon-b*))
-  (collides-p *test-polygon-a* *test-polygon-b*))
+  (assert-true (vec= #v(0 0) (collide *poly-a* *poly-b*)))
+  (assert-true (vec= #v(0 0) (collide *poly-b* *poly-a*)))
+  (incf (y *poly-b*) 8.2)
+  (assert-true (vec< #v(0 0) (collide *poly-a* *poly-b*)))
+  (assert-true (vec< #v(0 0) (collide *poly-b* *poly-a*)))
+  (setf (x *poly-a*) 17 (y *poly-a*) 20
+        (x *poly-b*) 47 (y *poly-b*) 11)
+  (assert-true (vec< #v(0 0) (collide *poly-b* *poly-a*))))
+
+(def-test-method test-calc-motion ((test polygon-test))
+  (with-accessors ((a a) (v v) (s s)) *poly-a*
+    (setf v #v(0 0) a #v(5 3))
+    (calc-motion *poly-a* 1)
+    (assert-true (vec= #v(5 3) a v s))
+    (setf v #v(0 0) s #v(0 0))
+    (calc-motion *poly-a* 2)
+    (assert-true (vec= v #v(10 6)) (dump-to-string v 'v))
+    (assert-true (vec= s #v(20 12)) (dump-to-string s 's))))
 
 (defun test-collision-manually ()
   (click:with-display-system (click:screen-colour '(1.0 1.0 1.0 1.0))
-    (setf *polygons* `(,*test-polygon-a* ,*test-polygon-b*))
     (let* ((a (make-polygon-igo
-                :polygon *test-polygon-a*
+                :polygon *poly-a*
                 :width 64 :height 64))
            (b (make-polygon-igo
-                :polygon *test-polygon-b*
-                :width 64 :height 64)))
+                :polygon *poly-b*
+                :width 64 :height 64))
+           (control (make-instance 'collision-control
+                                   :polygons `(,*poly-a* ,*poly-b*))))
+      (click:add-root-listener control)
       (click:add-to-root a)
       (click:add-to-root b))))

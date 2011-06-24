@@ -5,9 +5,10 @@
 (asdf:defsystem "motion-tests"
   :author "Jens Thiede"
   :license "BSD-like"
-  :depends-on ("motion" "xlunit" "click")
+  :depends-on ("motion" "xlunit" "events-extra" "click")
   :serial t
   :components ((:file "package")
                (:file "vec-test")
                (:file "polygon-igo")
-               (:file "polygon-test")))
+               (:file "polygon-test")
+               (:file "collision-control-test")))

@@ -4,29 +4,36 @@
 
 (in-package :motion)
 
-(defparameter *polygons* '())
-
 (defclass polygon-igo (click:igo)
   ((polygon :initarg :polygon
             :initform (error "Must specify polygon."))
+   (dragable :initarg :dragable
+             :initform t
+             :accessor dragable)
    (drag-state :initform nil)
+   (collision-state :initform nil)
    drag-offset normal-sprite collision-sprite))
 
 (click:define-instance-maker polygon-igo)
 
 (defmethod initialize-instance :after ((igo polygon-igo) &key)
-  (with-slots (polygon x y width height) igo
+  (with-slots (polygon width height) igo
     (setf (click:x igo) (x polygon)
-          (click:y igo) (y polygon)))
-  (update-sprites igo)
-  (click:desire-events igo :mouse-motion #'handle-mouse-events
-                       :mouse-button-up #'handle-mouse-events
-                       :mouse-button-down #'handle-mouse-events))
+          (click:y igo) (y polygon))
+    (update-sprites igo)
+    (desire-events igo :mouse-motion #'handle-mouse-events
+                   :mouse-button-up #'handle-mouse-events
+                   :mouse-button-down #'handle-mouse-events
+                   :collision #'handle-collision-events
+                   :after-frame #'handle-after-frame-events)
+    (subscribe polygon igo)))
 
 (defmethod handle-mouse-events ((igo polygon-igo) event)
-  (with-slots (polygon drag-state drag-offset) igo
-    (click:with-event-keys (x y) event
-      (case (click:event-type event)
+  (with-slots (dragable polygon drag-state drag-offset) igo
+    (unless dragable
+      (return-from handle-mouse-events))
+    (with-event-keys (x y) event
+      (case (event-type event)
         (:mouse-button-down
          (when (click:within igo x y)
            (setf drag-offset (vec (- x (click:x igo))
@@ -38,8 +45,21 @@
          (when drag-state
            (setf (click:x igo) (- x (x drag-offset))
                  (click:y igo) (- y (y drag-offset))
-                 (x polygon) x
-                 (y polygon) y)))))))
+                 (x polygon) (- x (x drag-offset))
+                 (y polygon) (- y (y drag-offset)))))))))
+
+(defmethod handle-collision-events ((igo polygon-igo) event)
+  (declare (ignore event))
+  (with-slots (collision-state) igo
+    (setf collision-state t)))
+
+(defmethod handle-after-frame-events ((igo polygon-igo) event)
+  (declare (ignore event))
+  (with-slots (polygon click:x click:y) igo
+    (calc-motion polygon (/ (click:frame-time) 1000.0))
+    (displace polygon)
+    (setf click:x (truncate (x polygon))
+          click:y (truncate (y polygon)))))
 
 (defmethod update-sprites ((igo polygon-igo))
   (with-slots (normal-sprite collision-sprite polygon) igo
@@ -54,9 +74,8 @@
                                           :fill-colour '(0.8 0.0 0.0 1)))))
 
 (defmethod click:draw ((igo polygon-igo))
-  (with-slots (polygon normal-sprite collision-sprite) igo
-    (loop for other-polygon in *polygons*
-          when (and (not (eq polygon other-polygon))
-                    (collides-p polygon other-polygon))
-            return (click:draw-sprite collision-sprite)
-          finally (click:draw-sprite normal-sprite))))
+  (with-slots (collision-state normal-sprite collision-sprite) igo
+    (click:draw-sprite (if collision-state
+                           collision-sprite
+                           normal-sprite))
+    (setf collision-state nil)))

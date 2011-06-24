@@ -5,10 +5,11 @@
 (asdf:defsystem "motion"
   :author "Jens Thiede"
   :license "BSD-like"
-  :depends-on ("meta-package")
+  :depends-on ("meta-package" "events")
   :serial t
   :components ((:file "package")
                (:file "conditions")
                (:file "vec")
                (:file "polygon")
+               (:file "collision-control")
                (:file "export")))

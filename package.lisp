@@ -3,4 +3,4 @@
 ; in the root directory of this project.
 
 (defpackage #:motion
-  (:use #:cl #:meta-package))
+  (:use #:cl #:meta-package #:events))
