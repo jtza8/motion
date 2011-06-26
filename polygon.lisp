@@ -50,11 +50,11 @@
     (with-slots (points axes) polygon
       (setf axes '())
       (loop with start = (car points)
-         for (a b) on points until (null b)
-         do (pushnew (left-normal (unit-vec a b))
-                     axes :test #'unit-vec=)
-         finally (pushnew (left-normal (unit-vec a start))
-                          axes :test #'unit-vec=)))))
+            for (a b) on points until (null b)
+            do (pushnew (left-normal (unit-vec a b))
+                        axes :test #'unit-vec=)
+            finally (pushnew (left-normal (unit-vec a start))
+                             axes :test #'unit-vec=)))))
   
 (defmethod collide ((a polygon) (b polygon))
   (loop with min-overlap and min-axis
@@ -65,7 +65,7 @@
         when (or (null min-overlap) (< overlap min-overlap))
           do (setf min-overlap overlap
                    min-axis axis)
-        when (< overlap 0) return #v(0.0 0.0)
+        when (<= overlap 0) return #v(0.0 0.0)
         finally (return (vec* min-overlap min-axis))))
 
 (defmethod calc-motion ((polygon polygon) time)
