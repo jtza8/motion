@@ -12,27 +12,22 @@
    (b :initform nil
       :initarg :b
       :accessor y
-      :accessor b)
-   (c :initform nil
-      :initarg :c
-      :accessor z
-      :accessor c)))
+      :accessor b)))
 
 (set-dispatch-macro-character #\# #\v
   #'(lambda (stream subchar args)
       (declare (ignore subchar args))
-      (destructuring-bind (a b &optional c) (read stream)
-        (make-instance 'vec :a a :b b :c c))))
+      (destructuring-bind (a b) (read stream)
+        (make-instance 'vec :a a :b b))))
 
 (defmethod make-load-form ((vec vec) &optional environment)
   (declare (ignore environment))
   `(make-instance ',(class-of vec)
                   :a ,(slot-value vec 'a)
-                  :b ,(slot-value vec 'b)
-                  :c ,(slot-value vec 'c)))
+                  :b ,(slot-value vec 'b)))
 
-(defun vec (a b &optional c)
-  (make-instance 'vec :a a :b b :c c))
+(defun vec (a b)
+  (make-instance 'vec :a a :b b))
 
 (internal define-vec-op)
 (defmacro define-vec-op (op)
@@ -43,25 +38,18 @@
        (defmethod ,two-vec-op ((a vec) (b vec))
          (make-instance 'vec
                         :a (,op (x a) (x b))
-                        :b (,op (y a) (y b))
-                        :c (progn
-                             (when (= (check-vec-dimensions a b) 3)
-                               (,op (z a) (z b))))))
+                        :b (,op (y a) (y b))))
        
        
        (defmethod ,two-vec-op ((a vec) (b number))
          (make-instance 'vec
                         :a (,op (x a) b)
-                        :b (,op (y a) b)
-                        :c (unless (null (z a))
-                             (* (z a) b))))
+                        :b (,op (y a) b)))
        
        (defmethod ,two-vec-op ((a number) (b vec))
          (make-instance 'vec
                         :a (,op a (x b))
-                        :b (,op a (y b))
-                        :c (unless (null (z b))
-                             (* (z b) a))))
+                        :b (,op a (y b))))
 
        (defmethod ,two-vec-op ((a number) (b number))
          (,op a b))
@@ -76,25 +64,15 @@
 
 (define-vec-ops + - * /)
 
-(defmacro define-vec-predicate (name (a b &optional c) &body predicate)
+(defmacro define-vec-predicate (name (a b) &body predicate)
   `(defmethod ,name ((,a vec) &rest vecs)
-     ,(when (null c) `(assert-vecs-2d ,a))
      (loop for ,b in vecs
-        ,@(when (null c) `(do (assert-vecs-2d ,b)))
         unless ,@predicate return nil
         finally (return t))))
 
-(defmethod overlap ((a vec) (b vec))
-  (cond ((<= (a a) (a b) (b b) (b a)) (- (b b) (a b)))
-        ((<= (a b) (a a) (b a) (b b)) (- (b a) (a a)))
-        ((< (a a) (a b)) (- (b a) (a b)))
-        ((< (a b) (a a)) (- (b b) (a a)))))
-
-(define-vec-predicate vec= (a b c)
+(define-vec-predicate vec= (a b)
   (and (= (a a) (a b))
-       (= (b a) (b b))
-       (or (or (null (c a)) (null (c b)))
-           (= (c a) (c b)))))
+       (= (b a) (b b))))
 
 (define-vec-predicate vec< (a b)
   (< (b a) (a b)))
@@ -108,11 +86,16 @@
 (define-vec-predicate vec>= (a b)
   (>= (a a) (b b)))
 
+(defmethod overlap ((a vec) (b vec))
+  (cond ((<= (a a) (a b) (b b) (b a)) (- (b b) (a b)))
+        ((<= (a b) (a a) (b a) (b b)) (- (b a) (a a)))
+        ((< (a a) (a b)) (- (b a) (a b)))
+        ((< (a b) (a a)) (- (b b) (a a)))))
+
 (defmethod copy-vec ((vec vec))
-  (vec (a vec) (b vec) (c vec)))
+  (vec (a vec) (b vec)))
 
 (defmethod min-max ((a vec) &rest vecs)
-  (apply #'assert-vecs-2d a vecs)
   (loop with result = (copy-vec a)
         for b in vecs
         when (< (a b) (a result)) do (setf (a result) (a b))
@@ -128,29 +111,21 @@
 
 (defmethod dot ((a vec) (b vec))
   (+ (* (x a) (x b))
-     (* (y a) (y b))
-     (if (= (check-vec-dimensions a b) 3)
-         (* (z a) (z b))
-         0)))
+     (* (y a) (y b))))
 
-(defmethod unit-vec ((a vec) (b vec))
-  (assert-vecs-2d a b)
-  (let* ((delta (vec- b a))
-         (length (sqrt (+ (expt (x delta) 2) (expt (y delta) 2)))))
-    (vec (/ (x delta) length) (/ (y delta) length))))
+(defmethod magnitude ((vec vec))
+  (with-accessors ((x x) (y y)) vec
+    (sqrt (+ (* x x) (* y y)))))
 
-(defmethod unit-vec= ((a vec) &rest b)
-  (apply #'vec=
-         (mapcar (lambda (v) (if (and (< (x v) 0) (< (y v) 0)) (vec* -1 v) v))
-                 (cons a b))))
+(defmethod normalise ((vec vec))
+  (let ((length (magnitude vec)))
+    (if (zerop length) vec (vec/ vec length))))
 
 (defmethod vec-vector ((vec vec))
   (let ((result (make-array 3 :element-type 'vec :fill-pointer 0)))
     (vector-push (a vec) result)
     (vector-push (b vec) result)
-    (unless (null (c vec))
-      (vector-push (c vec) result))
     result))
 
 (defmethod print-object ((object vec) stream)
-  (format stream "#v(~a~@{~@[ ~a~]~})" (a object) (b object) (c object)))
+  (format stream "#v(~a~@{~@[ ~a~]~})" (a object) (b object)))

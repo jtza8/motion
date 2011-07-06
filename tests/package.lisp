@@ -7,6 +7,7 @@
 
 (defvar *poly-a*)
 (defvar *poly-b*)
+(defvar *poly-c*)
 
 (defun reset-test-polys ()
   (setf *poly-a* 
@@ -16,5 +17,10 @@
         *poly-b*
         (make-instance 'polygon
                        :points '(#v(5 0) #v(30 35) #v(0 25))
-                       :x 65 :y 10)))
+                       :x 65 :y 10)
+        *poly-c*
+        (make-instance 'polygon
+                       :fixed t
+                       :points '(#v(2 2) #v(510 2) #v(510 126) #v(2 126))
+                       :x 5 :y 467)))
 

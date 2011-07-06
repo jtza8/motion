@@ -11,5 +11,6 @@
                (:file "conditions")
                (:file "vec")
                (:file "polygon")
-               (:file "collision-control")
+               (:file "collision-cell")
+               (:file "motion-control")
                (:file "export")))

@@ -7,19 +7,12 @@
 (in-package :motion)
 
 (defclass collision-control (listener)
-  ((polygons :initform '()
-             :initarg :polygons
-             :accessor polygons)))
+  ((cells :initform '()
+          :initarg :cells
+          :accessor cells)))
 
 (defmethod initialize-instance :after ((control collision-control) &key)
-  (desire-events control :before-frame #'detect-collisions))
+  (desire-events control :before-frame (no-event-arg #'detect-collisions)))
 
-(defmethod detect-collisions ((control collision-control) &optional event)
-  (declare (ignore event))
-  (with-slots (polygons) control
-    (loop for subset on polygons
-          do (loop with a = (car subset)
-                   for b in (cdr subset)
-                   unless (vec= (collide a b) #v(0 0))
-                     do (progn (send-event a `(:collision :a ,a :b ,b))
-                               (send-event b `(:collision :a ,b :b ,a)))))))
+(defmethod detect-collisions ((control collision-control))
+  ())

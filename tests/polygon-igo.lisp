@@ -38,9 +38,12 @@
          (when (click:within igo x y)
            (setf drag-offset (vec (- x (click:x igo))
                                   (- y (click:y igo)))
-                 drag-state t)))
+                 drag-state t
+                 (fixed polygon) t)))
         (:mouse-button-up
-         (setf drag-state nil))
+         (when (click:within igo x y)
+           (setf drag-state nil
+                 (fixed polygon) nil)))
         (:mouse-motion
          (when drag-state
            (setf (click:x igo) (- x (x drag-offset))
@@ -56,8 +59,7 @@
 (defmethod handle-after-frame-events ((igo polygon-igo) event)
   (declare (ignore event))
   (with-slots (polygon click:x click:y) igo
-    (calc-motion polygon (/ (click:frame-time) 1000.0))
-    (displace polygon)
+;    (calc-motion polygon (click:lap click:*iter-watch* :sec))
     (setf click:x (truncate (x polygon))
           click:y (truncate (y polygon)))))
 
@@ -65,8 +67,8 @@
   (with-slots (normal-sprite collision-sprite polygon) igo
     (setf normal-sprite (click:make-polygon-sprite
                           :points (map 'vector #'vec-vector (points polygon))
-                          :width 64
-                          :height 64
+                          :width (click:width igo)
+                          :height (click:height igo)
                           :line-colour '(0 0 0 1)
                           :line-width 2
                           :fill-colour '(0.0 0.8 0.0 1))
