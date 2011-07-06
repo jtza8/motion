@@ -5,16 +5,16 @@
 (in-package :motion)
 
 (defclass collision-cell (listenable listener)
-  ((polygons :initform '()
-             :initarg :polygons
-             :accessor polygons)))
+  ((polys :initform '()
+             :initarg :polys
+             :accessor polys)))
 
 (defmethod initialize-instance :after ((cell collision-cell) &key)
   (desire-events cell :before-frame (no-event-arg #'detect-collisions)))
 
 (defmethod detect-collisions ((cell collision-cell))
-  (with-slots (polygons) cell
-    (loop for subset on polygons
+  (with-slots (polys) cell
+    (loop for subset on polys
           do (loop with a = (car subset)
                    for b in (cdr subset)
                    for delta = (collide a b)

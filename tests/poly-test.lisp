@@ -4,7 +4,7 @@
 
 (in-package :motion)
 
-(defclass polygon-test (test-case)
+(defclass poly-test (test-case)
   ())
 
 (defun dump-to-string (object &optional name)
@@ -14,15 +14,15 @@
               (format out "For ~a:~%" name))
             (describe object out))))
 
-(defmethod set-up ((test polygon-test))
+(defmethod set-up ((test poly-test))
   (declare (ignore test))
   (reset-test-polys))
 
-(def-test-method test-project ((test polygon-test))
+(def-test-method test-project ((test poly-test))
   (assert-true (vec= (project *poly-a* #v(-0.414 0.910))
                      #v(-4.16 25.64))))
 
-(def-test-method test-collide ((test polygon-test))
+(def-test-method test-collide ((test poly-test))
   (assert-vec-equal #v(0 0) (collide *poly-a* *poly-b*))
   (assert-vec-equal #v(0 0) (collide *poly-b* *poly-a*))
   (incf (y *poly-b*) 8.2)
@@ -35,7 +35,7 @@
         (x *poly-b*) 118 (y *poly-b*) 85)
   (assert-vec-equal #v(3.5945957 -2.5675685) (collide *poly-a* *poly-b*)))
 
-(def-test-method test-calc-motion ((test polygon-test))
+(def-test-method test-calc-motion ((test poly-test))
   (with-accessors ((a a) (v v) (s s)) *poly-a*
     (setf v #v(0 0) a #v(5 3))
     (calc-motion *poly-a* 1)
@@ -50,17 +50,17 @@
   (click:with-display-system (click:screen-colour '(1.0 1.0 1.0 1.0)
                               click:screen-width 800
                               click:screen-height 600)
-    (let* ((a (make-polygon-igo
-                :polygon *poly-a*
+    (let* ((a (make-poly-igo
+                :poly *poly-a*
                 :width 64 :height 64))
-           (b (make-polygon-igo
-                :polygon *poly-b*
+           (b (make-poly-igo
+                :poly *poly-b*
                 :width 32 :height 64))
-           (c (make-polygon-igo
-                :polygon *poly-c*
+           (c (make-poly-igo
+                :poly *poly-c*
                 :width 512 :height 128))
            (m-control (make-instance 'motion-control
-                                     :polygons `(,*poly-a* ,*poly-b* ,*poly-c*))))
+                                     :polys `(,*poly-a* ,*poly-b* ,*poly-c*))))
       (click:add-root-listener m-control)
       (click:add-to-root a)
       (click:add-to-root b)

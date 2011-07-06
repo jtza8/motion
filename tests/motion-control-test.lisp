@@ -10,5 +10,5 @@
 ;; (def-test-method test-cell-at ((test motion-control-test))
 ;;   (let ((control (make-instance 'motion-control
 ;;                                 :rows 4 :columns 5
-;;                                 :polygons `(,*poly-a* ,*poly-b*)
+;;                                 :polys `(,*poly-a* ,*poly-b*)
 ;;                                 :cell-width)

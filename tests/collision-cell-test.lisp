@@ -13,7 +13,7 @@
 
 (def-test-method test-detect-collisions ((test collision-cell-test))
   (let ((cell (make-instance 'collision-cell
-                                :polygons `(,*poly-a* ,*poly-b*)))
+                                :polys `(,*poly-a* ,*poly-b*)))
         (listener-a (make-instance 'dummy-listener
                                    :desired-events '(:collision)))
         (listener-b (make-instance 'dummy-listener

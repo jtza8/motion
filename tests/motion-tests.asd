@@ -9,7 +9,7 @@
   :serial t
   :components ((:file "package")
                (:file "vec-test")
-               (:file "polygon-igo")
-               (:file "polygon-test")
+               (:file "poly-igo")
+               (:file "poly-test")
                (:file "collision-cell-test")
                (:file "motion-control-test")))

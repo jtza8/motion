@@ -5,8 +5,8 @@
 (in-package :motion)
 
 (defclass motion-control (listener)
-  ((polygons :initform '()
-             :initarg :polygons)
+  ((polys :initform '()
+             :initarg :polys)
    (cell-width :initform 128)
    (cell-height :initform 128)
    (rows :initform 20)
@@ -16,24 +16,24 @@
    cells))
 
 (defmethod initialize-instance :after ((control motion-control) &key)
-  (with-slots (cell polygons) control
-    (setf cell (make-instance 'collision-cell :polygons polygons))
+  (with-slots (cell polys) control
+    (setf cell (make-instance 'collision-cell :polys polys))
     (desire-events control :loop-iteration #'loop-iteration-handler)))
 
 (defmethod loop-iteration-handler ((control motion-control) event)
-  (with-slots (polygons cell) control
+  (with-slots (polys cell) control
    (events:with-event-keys (time) event
-      (dolist (poly polygons)
+      (dolist (poly polys)
         (calc-motion poly time))
       (detect-collisions cell)
-      (dolist (poly polygons)
+      (dolist (poly polys)
         (displace poly))
       ))
   )
 
 ;; (defmethod initialize-instance :after ((control motion-control) &key)
 ;;   (with-slots (cells dirty-cells rows columns) control
-;;     (setf cells (make-array (list rows columns) :element-type 'polygon))
+;;     (setf cells (make-array (list rows columns) :element-type 'poly))
 ;;     (dotimes (i columns)
 ;;       (dotimes (j columns)
 ;;         (push (setf (aref cells i j)
@@ -62,9 +62,9 @@
 
 
 ;; (defmethod calc-motion ((control motion-control) time)
-;;   (with-slots (cell polygons) control
-;;     (dolist (poly polygons)
+;;   (with-slots (cell polys) control
+;;     (dolist (poly polys)
 ;;       (calc-motion poly time))
 ;;     (detect-collisions cell)
-;;     (dolist (poly polygons)
+;;     (dolist (poly polys)
 ;;       (displace poly))))

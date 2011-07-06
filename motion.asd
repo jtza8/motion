@@ -10,7 +10,7 @@
   :components ((:file "package")
                (:file "conditions")
                (:file "vec")
-               (:file "polygon")
+               (:file "poly")
                (:file "collision-cell")
                (:file "motion-control")
                (:file "export")))
