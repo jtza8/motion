@@ -11,5 +11,6 @@
                (:file "vec-test")
                (:file "poly-igo")
                (:file "poly-test")
+               (:file "matter-test")
                (:file "collision-cell-test")
                (:file "motion-control-test")))

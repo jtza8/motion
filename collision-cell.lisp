@@ -5,26 +5,26 @@
 (in-package :motion)
 
 (defclass collision-cell (listenable listener)
-  ((polys :initform '()
-             :initarg :polys
-             :accessor polys)))
+  ((objects :initform '()
+            :initarg :objects
+            :accessor objects)))
 
 (defmethod initialize-instance :after ((cell collision-cell) &key)
   (desire-events cell :before-frame (no-event-arg #'detect-collisions)))
 
 (defmethod detect-collisions ((cell collision-cell))
-  (with-slots (polys) cell
-    (loop for subset on polys
+  (with-slots (objects) cell
+    (loop for subset on objects
           do (loop with a = (car subset)
                    for b in (cdr subset)
-                   for delta = (collide a b)
-                   unless (vec= delta #v(0 0))
+                   for delta = (overlap (presence a) (presence b))
+                   unless (= delta 0.0)
                      do (progn
                           (setf (v a) #v(0 0)
                                 (s a) 
-                                (vec- (s a) delta))
+                                (vec- (s a) (vec* delta (normalise (s a)))))
                           (when (< (magnitude (s a)) 1.0)
                             (setf (s a) #v(0.0 0.0)))
                           (setf (s b) #v(0 0) (v b) #v(0 0) (a b) #v(0 0))
-                          (send-event a `(:collision :a ,a :b ,b))
-                          (send-event b `(:collision :a ,b :b ,a)))))))
+                          (send-event a `(:matter-collision :a ,a :b ,b))
+                          (send-event b `(:matter-collision :a ,b :b ,a)))))))

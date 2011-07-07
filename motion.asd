@@ -11,6 +11,7 @@
                (:file "conditions")
                (:file "vec")
                (:file "poly")
+               (:file "matter")
                (:file "collision-cell")
                (:file "motion-control")
                (:file "export")))

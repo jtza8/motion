@@ -38,12 +38,10 @@
          (when (click:within igo x y)
            (setf drag-offset (vec (- x (click:x igo))
                                   (- y (click:y igo)))
-                 drag-state t
-                 (fixed poly) t)))
+                 drag-state t)))
         (:mouse-button-up
          (when (click:within igo x y)
-           (setf drag-state nil
-                 (fixed poly) nil)))
+           (setf drag-state nil)))
         (:mouse-motion
          (when drag-state
            (setf (click:x igo) (- x (x drag-offset))

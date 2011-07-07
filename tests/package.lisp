@@ -9,6 +9,10 @@
 (defvar *poly-b*)
 (defvar *poly-c*)
 
+(defvar *matter-a*)
+(defvar *matter-b*)
+(defvar *matter-c*)
+
 (defun reset-test-polys ()
   (setf *poly-a* 
         (make-instance 'poly
@@ -23,3 +27,8 @@
                        :points '(#v(2 2) #v(510 2) #v(510 126) #v(2 126))
                        :x 5 :y 467)))
 
+(defun reset-test-matter ()
+  (reset-test-polys)
+  (setf *matter-a* (make-instance 'matter :presence *poly-a*)
+        *matter-b* (make-instance 'matter :presence *poly-b*)
+        *matter-c* (make-instance 'matter :presence *poly-c* :fixed t)))

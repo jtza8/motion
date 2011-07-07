@@ -5,8 +5,8 @@
 (in-package :motion)
 
 (defclass motion-control (listener)
-  ((polys :initform '()
-             :initarg :polys)
+  ((objects :initform '()
+            :initarg :objects)
    (cell-width :initform 128)
    (cell-height :initform 128)
    (rows :initform 20)
@@ -16,24 +16,22 @@
    cells))
 
 (defmethod initialize-instance :after ((control motion-control) &key)
-  (with-slots (cell polys) control
-    (setf cell (make-instance 'collision-cell :polys polys))
+  (with-slots (cell objects) control
+    (setf cell (make-instance 'collision-cell :objects objects))
     (desire-events control :loop-iteration #'loop-iteration-handler)))
 
 (defmethod loop-iteration-handler ((control motion-control) event)
-  (with-slots (polys cell) control
-   (events:with-event-keys (time) event
-      (dolist (poly polys)
-        (calc-motion poly time))
+  (with-slots (objects cell) control
+    (events:with-event-keys (time) event
+      (dolist (object objects)
+        (update-motion object time))
       (detect-collisions cell)
-      (dolist (poly polys)
-        (displace poly))
-      ))
-  )
+      (dolist (object objects)
+        (displace object)))))
 
 ;; (defmethod initialize-instance :after ((control motion-control) &key)
 ;;   (with-slots (cells dirty-cells rows columns) control
-;;     (setf cells (make-array (list rows columns) :element-type 'poly))
+;;     (setf cells (make-array (list rows columns) :element-type 'object))
 ;;     (dotimes (i columns)
 ;;       (dotimes (j columns)
 ;;         (push (setf (aref cells i j)
@@ -52,19 +50,19 @@
 ;;           (when (and (< -1 row rows) (< -1 column columns))
 ;;             (aref cells column row)))))
 
-;; (defmethod poly-motion-handler ((control motion-control) event)
+;; (defmethod object-motion-handler ((control motion-control) event)
 ;;   (with-slots (cells cell-width cell-height rows columns) control
-;;     (with-event-keys (poly dx dy) event
-;;       (let ((old-cell (cell-at control (x poly) (y poly)))
-;;             (new-cell (cell-at control (+ (x poly) dx) (+ (y poly) dy))))
-;;         (unless (null old-cell) (remove-poly old-cell poly))
-;;         (unless (null new-cell) (add-poly new-cell poly))))))
+;;     (with-event-keys (object dx dy) event
+;;       (let ((old-cell (cell-at control (x object) (y object)))
+;;             (new-cell (cell-at control (+ (x object) dx) (+ (y object) dy))))
+;;         (unless (null old-cell) (remove-object old-cell object))
+;;         (unless (null new-cell) (add-object new-cell object))))))
 
 
 ;; (defmethod calc-motion ((control motion-control) time)
-;;   (with-slots (cell polys) control
-;;     (dolist (poly polys)
-;;       (calc-motion poly time))
+;;   (with-slots (cell objects) control
+;;     (dolist (object objects)
+;;       (calc-motion object time))
 ;;     (detect-collisions cell)
-;;     (dolist (poly polys)
-;;       (displace poly))))
+;;     (dolist (object objects)
+;;       (displace object))))
