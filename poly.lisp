@@ -41,7 +41,7 @@
     (flet ((push-normal (a b)
              (let ((normalised (normalise (vec- b a))))
                (pushnew (vec (- (y normalised)) (x normalised))
-                        axes :test #'vec=))))
+                        axes :test #'axis=))))
       (loop with start = (car points)
             for (a b) on points until (null b)
             do (push-normal a b)

@@ -52,7 +52,10 @@
     (assert-true (vec> b a))
     (assert-false (vec> a b))
     (assert-false (vec> c a))
-    (assert-true (vec>= c a))))
+    (assert-true (vec>= c a))
+    (assert-true (axis= #v(1 1) #v(-1 -1)))
+    (assert-false (axis= #v(1 1) #v(1 -1)))
+    (assert-false (axis= #v(1 1) #v(-1 1)))))
 
 (def-test-method test-overlap ((test vec-test))
   (assert-equal 1 (overlap #v(1 3) #v(2 5)))

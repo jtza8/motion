@@ -4,3 +4,6 @@
 
 (defpackage #:motion
   (:use #:cl #:meta-package #:events))
+
+(in-package :motion)
+(defconstant +sqrt-2+ (sqrt 2))

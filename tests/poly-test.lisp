@@ -40,7 +40,7 @@
           (loop for i below 1000
              collect (make-instance 'poly
                        :points (points (if (= 0 (random 2))
-                                           *poly-b*
+                                           *poly-c*
                                            *poly-a*))
                        :x (random 1000)
                        :y (random 1000)))))
@@ -55,9 +55,9 @@
   (click:with-display-system (click:screen-colour '(1.0 1.0 1.0 1.0)
                               click:screen-width 800
                               click:screen-height 600)
-    (let* (;; (a (make-poly-igo
-           ;;      :poly *poly-a*
-           ;;      :width 64 :height 64))
+    (let* ((a (make-poly-igo
+                :poly *poly-a*
+                :width 64 :height 64))
            (b (make-poly-igo
                 :poly *poly-b*
                 :width 32 :height 64))
@@ -65,8 +65,9 @@
                 :poly *poly-c*
                 :width 512 :height 128))
            (m-control (make-instance 'motion-control
-                                     :objects `(,*matter-b* ,*matter-c*))))
+                                     :objects `(,*matter-a* ,*matter-b*
+                                                            ,*matter-c*))))
       (click:add-root-listener m-control)
-      ;; (click:add-to-root a)
+      (click:add-to-root a)
       (click:add-to-root b)
       (click:add-to-root c))))

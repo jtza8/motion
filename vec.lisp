@@ -86,14 +86,17 @@
 (define-vec-predicate vec>= (a b)
   (>= (a a) (b b)))
 
+(defmethod axis= ((a vec) &rest other)
+  (dolist (b other t)
+    (unless (or (vec= a b)
+                (vec= (vec* -1 a) b))
+      (return nil))))
+
 (defmethod overlap ((a vec) (b vec))
   (cond ((<= (a a) (a b) (b b) (b a)) (- (b b) (a b)))
         ((<= (a b) (a a) (b a) (b b)) (- (b a) (a a)))
         ((< (a a) (a b)) (- (b a) (a b)))
         ((< (a b) (a a)) (- (b b) (a a)))))
-
-(defmethod copy-vec ((vec vec))
-  (vec (a vec) (b vec)))
 
 (defmethod min-max ((a vec) &rest vecs)
   (loop with result = (copy-vec a)
@@ -120,6 +123,9 @@
 (defmethod normalise ((vec vec))
   (let ((length (magnitude vec)))
     (if (zerop length) vec (vec/ vec length))))
+
+(defmethod copy-vec ((vec vec))
+  (vec (a vec) (b vec)))
 
 (defmethod vec-vector ((vec vec))
   (let ((result (make-array 3 :element-type 'vec :fill-pointer 0)))
