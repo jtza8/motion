@@ -9,15 +9,13 @@
             :initarg :objects
             :accessor objects)))
 
-(defmethod initialize-instance :after ((cell collision-cell) &key)
-  (desire-events cell :before-frame (no-event-arg #'detect-collisions)))
-
 (defmethod detect-collisions ((cell collision-cell))
   (with-slots (objects) cell
     (loop for subset on objects
-          do (loop with a = (car subset)
+          do (loop with a = (car subset) and delta and axis
                    for b in (cdr subset)
-                   for delta = (overlap (presence a) (presence b))
+                   do (setf (values delta axis)
+                            (overlap (presence a) (presence b)))
                    unless (= delta 0.0)
                      do (progn
                           (setf (v a) #v(0 0)

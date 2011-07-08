@@ -55,7 +55,7 @@
                 collect (cons axis (project poly axis))))))
 
 (defmethod overlap ((a poly) (b poly))
-  (loop with min-overlap
+  (loop with min-overlap and min-axis
         for axis in (union (axes a) (axes b) :test #'vec=)
         for overlap = (overlap (vec+ (project-with-cache a axis)
                                      (dot (vec (x a) (y a)) axis))
@@ -63,5 +63,6 @@
                                      (dot (vec (x b) (y b)) axis)))
         when (<= overlap 0.0) return 0.0
         when (or (null min-overlap) (< overlap min-overlap))
-          do (setf min-overlap overlap)
-        finally (return min-overlap)))
+          do (setf min-overlap overlap
+                   min-axis axis)
+        finally (return (values min-overlap min-axis))))

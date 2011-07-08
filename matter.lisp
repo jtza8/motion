@@ -7,7 +7,7 @@
 (defparameter *ppm* 300 "Pixels per meter.")
 (defparameter *gravity* #v(0.0 (* 9.8 *ppm*)))
 
-(defclass matter (listenable)
+(defclass matter (listenable listener)
   ((presence :initarg :presence
              :initform (error "All matter must have a presence.")
              :accessor presence)
@@ -31,7 +31,9 @@
       :accessor acceleration)))
 
 (defmethod initialize-instance :after ((matter matter) &key)
-  (provide-events matter :matter-collision))
+  (provide-events matter :matter-collision)
+  (desire-events matter :matter-collision #'matter-collision-handler)
+  (subscribe matter matter :matter-collision))
 
 (defmethod update-motion ((matter matter) time)
   (with-slots (fixed m s v a) matter
@@ -47,3 +49,8 @@
     (incf (x presence) (x s))
     (incf (y presence) (y s))
     (setf s #v(0.0 0.0))))
+
+(defmethod matter-collision-handler ((matter matter) event)
+  (with-event-keys (a b) event
+    ))
+    ;; (setf (v a) )))
