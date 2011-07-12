@@ -14,13 +14,25 @@
    (points :initform '()
            :initarg :points
            :accessor points)
+   (aabb :reader aabb)
    (axes :reader axes)
    (projections :reader projections)))
 
 (defmethod initialize-instance :after ((poly poly) &key)
   (provide-events poly :collision)
   (update-axes poly)
-  (update-projections poly))
+  (update-projections poly)
+  (update-aabb poly))
+
+(defmethod update-aabb ((poly poly))
+  (with-slots (aabb points) poly
+    (setf aabb
+          (loop for p in points
+                collect (x p) into x
+                collect (y p) into y
+                finally (return
+                          (cons (vec (apply #'min x) (apply #'max x))
+                                (vec (apply #'min y) (apply #'max y))))))))
 
 (defmethod project ((poly poly) (axis vec))
   (with-slots (points) poly

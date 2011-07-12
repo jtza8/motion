@@ -48,6 +48,24 @@
     (incf (y presence) (y s))
     (setf s #v(0.0 0.0))))
 
+(defun point-collision-time (s v a)
+  (if (= a 0)
+      (if (= v 0) nil (float (/ s v)))
+      (let ((part-a (/ (* 2 (+ s (/ (* v v) (* 2 a)))) a)))
+        (if (minusp part-a) nil
+            (- (sqrt part-a) (/ v a))))))
+
+(defun segment-collision-time (s-a s-b v a)
+  (let ((point-a (point-collision-time (- (a s-b) (b s-a)) v a)) point-b)
+    (if point-a
+        (setf point-b (point-collision-time (- (b s-b) (a s-a)) v a))
+        (return-from segment-collision-time nil))
+    (when point-b
+      (vec point-a point-b))))
+
+(defmethod aabb-collision-time ((a matter) (b matter))
+  ())
+
 (defmethod collision-update ((a matter) (b matter) delta axis)
   (with-slots ((s-a s) (v-a v)) a
     (with-slots ((s-b s) (v-b v)) b

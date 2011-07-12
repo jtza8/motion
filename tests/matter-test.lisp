@@ -20,3 +20,15 @@
   (assert-vec-equal #v(0.0 0.0) (s *matter-b*))
   (update-motion *matter-c* 10.0)
   (assert-vec-equal #v(0.0 0.0) (s *matter-c*)))
+
+(def-test-method test-point-collision-time ((test matter-test))
+  (assert-equal 1.1735992 (point-collision-time 10 5 6))
+  (assert-equal 2.0 (point-collision-time 10 5 0))
+  (assert-equal 1.8257419 (point-collision-time 10 0 6))
+  (assert-equal 0.0 (point-collision-time 0 5 6))
+  (assert-equal nil (point-collision-time 10 0 0))
+  (assert-equal 1.8257419 (point-collision-time 10 0 6)))
+
+(def-test-method test-segment-collision-time ((test matter-test))
+  (assert-vec-equal #v(0.123105526 0.47213602)
+                    (segment-collision-time #v(1 2) #v(3 5) 8 2)))
