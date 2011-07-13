@@ -64,7 +64,16 @@
       (vec point-a point-b))))
 
 (defmethod aabb-collision-time ((a matter) (b matter))
-  ())
+  (macrolet ((time-segment (part carcdr)
+               `(segment-collision-time (vec+ (,part (presence a))
+                                              (,carcdr aabb-a))
+                                        (vec+ (,part (presence b))
+                                              (,carcdr aabb-b))
+                                        (vec- (,part (v a)) (x (v b)))
+                                        (vec- (,part (a a)) (x (a b))))))
+    (let ((aabb-a (aabb (presence a)))
+          (aabb-b (aabb (presence b))))
+      (intersect (time-segment x car) (time-segment y cdr)))))
 
 (defmethod collision-update ((a matter) (b matter) delta axis)
   (with-slots ((s-a s) (v-a v)) a

@@ -98,6 +98,16 @@
         ((< (a a) (a b)) (- (b a) (a b)))
         ((< (a b) (a a)) (- (b b) (a a)))))
 
+(defmethod intersect ((a vec) (b vec))
+  (when (< (a b) (a a))
+    (let ((tmp (a a)))
+      (setf (a a) (a b)
+            (a b) tmp)))
+  (let ((min (max (a a) (a b)))
+        (max (min (b a) (b b))))
+    (when (<= min max)
+      (vec min max))))
+
 (defmethod min-max ((a vec) &rest vecs)
   (loop with result = (copy-vec a)
         for b in vecs

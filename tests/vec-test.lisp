@@ -65,6 +65,11 @@
   (assert-equal 2 (overlap #v(1 9) #v(1 3)))
   (assert-equal 2 (overlap #v(1 3) #v(1 9))))
 
+(def-test-method test-intersect ((test vec-test))
+  (assert-vec-equal #v(2 5) (intersect #v(-1 5) #v(2 6)))
+  (assert-vec-equal #v(2 3) (intersect #v(-1 5) #v(2 3)))
+  (assert-equal nil (intersect #v(-1 5) #v(8 10))))
+
 (def-test-method test-min-max ((test vec-test))
   (let ((a #v(1 2)))
     (assert-true (vec= #v(-3 8) (min-max #v(-3 2) #v(1 8))))
