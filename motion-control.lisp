@@ -18,7 +18,8 @@
 (defmethod initialize-instance :after ((control motion-control) &key)
   (with-slots (cell objects) control
     (setf cell (make-instance 'collision-cell :objects objects))
-    (desire-events control :loop-iteration #'loop-iteration-handler)))
+    ;; (desire-events control :loop-iteration #'loop-iteration-handler)
+    ))
 
 (defmethod loop-iteration-handler ((control motion-control) event)
   (with-slots (objects cell) control

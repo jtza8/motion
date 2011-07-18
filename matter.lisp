@@ -71,9 +71,12 @@
                                               (,carcdr aabb-b))
                                         (vec- (,part (v a)) (x (v b)))
                                         (vec- (,part (a a)) (x (a b))))))
-    (let ((aabb-a (aabb (presence a)))
-          (aabb-b (aabb (presence b))))
-      (intersect (time-segment x car) (time-segment y cdr)))))
+    (let* ((aabb-a (aabb (presence a)))
+           (aabb-b (aabb (presence b)))
+           (seg-x (time-segment x car))
+           (seg-y (time-segment y cdr)))
+      (when (and seg-x seg-y)
+        (intersect seg-x seg-y)))))
 
 (defmethod collision-update ((a matter) (b matter) delta axis)
   (with-slots ((s-a s) (v-a v)) a
