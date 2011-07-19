@@ -31,8 +31,8 @@
                 collect (x p) into x
                 collect (y p) into y
                 finally (return
-                          (cons (vec (apply #'min x) (apply #'max x))
-                                (vec (apply #'min y) (apply #'max y))))))))
+                          (cons (vec (apply #'min x) (apply #'min y))
+                                (vec (apply #'max x) (apply #'max y))))))))
 
 (defmethod project ((poly poly) (axis vec))
   (with-slots (points) poly

@@ -34,6 +34,10 @@
         (x *poly-b*) 118 (y *poly-b*) 85)
   (assert-equal 4.417412 (overlap *poly-a* *poly-b*)))
 
+(def-test-method test-aabb ((test poly-test))
+  (let ((result (aabb *poly-a*)))
+    (assert-vec-equal #v(0 0) (car result))
+    (assert-vec-equal #v(65 35) (cdr result))))
 
 (defun profile-ovelap ()
   (let* ((polys 

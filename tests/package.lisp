@@ -13,6 +13,8 @@
 (defvar *matter-b*)
 (defvar *matter-c*)
 
+(defvar *cell-a*)
+
 (defun reset-test-polys ()
   (setf *poly-a* 
         (make-instance 'poly
@@ -32,3 +34,8 @@
   (setf *matter-a* (make-instance 'matter :presence *poly-a*)
         *matter-b* (make-instance 'matter :presence *poly-b*)
         *matter-c* (make-instance 'matter :presence *poly-c* :fixed t)))
+
+(defun reset-test-cells ()
+  (reset-test-matter)
+  (setf *cell-a* (make-instance 'collision-cell
+                 :matters (list *matter-a* *matter-b* *matter-c*))))

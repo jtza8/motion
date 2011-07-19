@@ -61,22 +61,33 @@
         (setf point-b (point-collision-time (- (b s-b) (a s-a)) v a))
         (return-from segment-collision-time nil))
     (when point-b
-      (vec point-a point-b))))
+      (if (< point-b point-a)
+          (vec point-b point-a)
+          (vec point-a point-b)))))
+
+(defmethod abs-point ((poly poly) point)
+  (with-slots (x y) poly
+    (vec+ (vec x y) point)))
 
 (defmethod aabb-collision-time ((a matter) (b matter))
-  (macrolet ((time-segment (part carcdr)
-               `(segment-collision-time (vec+ (,part (presence a))
-                                              (,carcdr aabb-a))
-                                        (vec+ (,part (presence b))
-                                              (,carcdr aabb-b))
-                                        (vec- (,part (v a)) (x (v b)))
-                                        (vec- (,part (a a)) (x (a b))))))
-    (let* ((aabb-a (aabb (presence a)))
-           (aabb-b (aabb (presence b)))
-           (seg-x (time-segment x car))
-           (seg-y (time-segment y cdr)))
-      (when (and seg-x seg-y)
-        (intersect seg-x seg-y)))))
+  (with-slots ((poly-a presence)) a
+    (with-slots ((poly-b presence)) b
+      (let* ((a-a (abs-point poly-a (car (aabb poly-a))))
+             (a-b (abs-point poly-a (cdr (aabb poly-a))))
+             (b-a (abs-point poly-b (car (aabb poly-b))))
+             (b-b (abs-point poly-b (cdr (aabb poly-b))))
+             (v (vec- (v a) (v b)))
+             (accell (vec- (a a) (a b)))
+             (x-collision (segment-collision-time (vec (x a-a) (x a-b))
+                                                  (vec (x b-a) (x b-b))
+                                                  (x v)
+                                                  (x accell)))
+             (y-collision (segment-collision-time (vec (y a-a) (y a-b))
+                                                  (vec (y b-a) (y b-b))
+                                                  (y v)
+                                                  (y accell))))
+        (when (and x-collision y-collision)
+          (intersect x-collision y-collision))))))
 
 (defmethod collision-update ((a matter) (b matter) delta axis)
   (with-slots ((s-a s) (v-a v)) a

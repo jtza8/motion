@@ -16,19 +16,15 @@
    cells))
 
 (defmethod initialize-instance :after ((control motion-control) &key)
-  (with-slots (cell objects) control
-    (setf cell (make-instance 'collision-cell :objects objects))
-    ;; (desire-events control :loop-iteration #'loop-iteration-handler)
+  (with-slots (objects cell) control
+    (setf cell (make-instance 'collision-cell :matters objects))
+    (desire-events control :loop-iteration #'loop-iteration-handler)
     ))
 
 (defmethod loop-iteration-handler ((control motion-control) event)
-  (with-slots (objects cell) control
+  (with-slots (cell) control
     (events:with-event-keys (time) event
-      (dolist (object objects)
-        (update-motion object time))
-      (detect-collisions cell)
-      (dolist (object objects)
-        (displace object)))))
+      (apply-matter-physics cell time))))
 
 ;; (defmethod initialize-instance :after ((control motion-control) &key)
 ;;   (with-slots (cells dirty-cells rows columns) control

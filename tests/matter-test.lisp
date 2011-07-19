@@ -32,3 +32,10 @@
 (def-test-method test-segment-collision-time ((test matter-test))
   (assert-vec-equal #v(0.123105526 0.47213602)
                     (segment-collision-time #v(1 2) #v(3 5) 8 2)))
+
+(def-test-method test-aabb-collision-time ((test matter-test))
+  (setf (v *matter-a*) #v(-10.0 -10.0)
+        (v *matter-b*) #v(+10.0 +10.0))
+  (assert-vec-equal #v(15 25) (abs-point *poly-a* (car (aabb *poly-a*))))
+  (assert-vec-equal #v(80 60) (abs-point *poly-a* (cdr (aabb *poly-a*))))
+  (assert-vec-equal #v(-1.0 0.75) (aabb-collision-time *matter-a* *matter-b*)))
