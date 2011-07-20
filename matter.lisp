@@ -50,16 +50,23 @@
 
 (defun point-collision-time (s v a)
   (if (= a 0)
-      (if (= v 0) nil (float (/ s v)))
-      (let ((part-a (/ (* 2 (+ s (/ (* v v) (* 2 a)))) a)))
-        (if (minusp part-a) nil
-            (- (sqrt part-a) (/ v a))))))
+      (if (= v 0) 
+          (if (zerop s) 0.0 :infinity)
+          (float (/ s v)))
+      (let* ((part-a (/ (* 2 (+ s (/ (* v v) (* 2 a)))) a))
+             (part-b (if (minusp part-a)
+                         (- (sqrt (abs part-a)))
+                         (sqrt part-a))))
+        (if (or (and (plusp s) (plusp v) (minusp a))
+                (and (minusp s) (minusp v) (plusp a)))
+            (- (- part-b) (/ v a))
+            (- part-b (/ v a))))))
 
 (defun segment-collision-time (s-a s-b v a)
   (let ((point-a (point-collision-time (- (a s-b) (b s-a)) v a)) point-b)
-    (if point-a
-        (setf point-b (point-collision-time (- (b s-b) (a s-a)) v a))
-        (return-from segment-collision-time nil))
+    (if (eq point-a :infinity)
+        (return-from segment-collision-time #v(:infinity :infinity))
+        (setf point-b (point-collision-time (- (b s-b) (a s-a)) v a)))
     (when point-b
       (if (< point-b point-a)
           (vec point-b point-a)
@@ -89,7 +96,7 @@
         (when (and x-collision y-collision)
           (intersect x-collision y-collision))))))
 
-(defmethod collision-update ((a matter) (b matter) delta axis)
+(defmethod collision-update ((a matter) (b matter) c-time)
   (with-slots ((s-a s) (v-a v)) a
     (with-slots ((s-b s) (v-b v)) b
       (setf v-a #v(0.0 0.0)
@@ -101,5 +108,5 @@
         (when (< (magnitude s) 1.0)
           (setf s #v(0.0 0.0)))))))
 
-(defmethod collision-update :after ((matter matter) (other matter) delta r-axis)
+(defmethod collision-update :after ((matter matter) (other matter) c-time)
   (send-event matter `(:matter-collision :a ,matter :b ,other :r-axis ,r-axis)))
