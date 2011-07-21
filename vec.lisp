@@ -4,144 +4,94 @@
 
 (in-package :motion)
 
-(defclass vec ()
-  ((a :initform nil
-      :initarg :a
-      :accessor x
-      :accessor a)
-   (b :initform nil
-      :initarg :b
-      :accessor y
-      :accessor b)))
-
-(set-dispatch-macro-character #\# #\v
-  #'(lambda (stream subchar args)
-      (declare (ignore subchar args))
-      (destructuring-bind (a b) (read stream)
-        (make-instance 'vec :a a :b b))))
-
-(defmethod make-load-form ((vec vec) &optional environment)
-  (declare (ignore environment))
-  `(make-instance ',(class-of vec)
-                  :a ,(slot-value vec 'a)
-                  :b ,(slot-value vec 'b)))
-
-(defun vec (a b)
-  (make-instance 'vec :a a :b b))
-
-(internal define-vec-op)
-(defmacro define-vec-op (op)
-  (let ((two-vec-op (intern (format nil "TWO-VEC~a" op)))
-        (vec-op (intern (format nil "VEC~a" op))))
+(internal define-vec-accessor)
+(defmacro define-vec-accessor (postfix index)
+  (let ((name (intern (format nil "VEC-~a" postfix))))
     `(progn
-       (internal ,two-vec-op)
-       (defmethod ,two-vec-op ((a vec) (b vec))
-         (make-instance 'vec
-                        :a (,op (x a) (x b))
-                        :b (,op (y a) (y b))))
-       
-       
-       (defmethod ,two-vec-op ((a vec) (b number))
-         (make-instance 'vec
-                        :a (,op (x a) b)
-                        :b (,op (y a) b)))
-       
-       (defmethod ,two-vec-op ((a number) (b vec))
-         (make-instance 'vec
-                        :a (,op a (x b))
-                        :b (,op a (y b))))
+       (declaim (inline ,name))
+       (defun ,name (vec) (aref vec ,index))
+       (defsetf ,name (vec) (value)
+         `(setf (aref ,vec ,,index) ,value)))))
 
-       (defmethod ,two-vec-op ((a number) (b number))
-         (,op a b))
-       
-       (defun ,vec-op (&rest args)
-         (reduce #',two-vec-op args)))))
+(define-vec-accessor a 0)
+(define-vec-accessor x 0)
+(define-vec-accessor b 1)
+(define-vec-accessor y 1)
 
-(internal define-vec-ops)
-(defmacro define-vec-ops (&rest ops)
-  `(progn ,@(loop for op in ops
-                  collect `(define-vec-op ,op))))
+(internal define-vec2-sign)
+(defmacro define-vec2-sign (sign)
+  (let ((name (intern (format nil "VEC2~a" sign))))
+    `(progn
+       (declaim (inline ,name))
+       (defun ,name (&rest args)
+         (loop 
+            for arg in args
+            for sum = arg
+              then (etypecase sum
+                     (number (etypecase arg
+                               (number (,sign sum arg))
+                               (vector (vector (,sign (vec-x arg) sum)
+                                               (,sign (vec-y arg) sum)))))
+                     (vector (etypecase arg
+                               (number (vector (,sign (vec-x sum) arg)
+                                               (,sign (vec-y sum) arg)))
+                               (vector (vector (,sign (vec-x sum) (vec-x arg))
+                                               (,sign (vec-y sum)
+                                                    (vec-y arg)))))))
+            finally (return sum))))))
 
-(define-vec-ops + - * /)
+(define-vec2-sign +)
+(define-vec2-sign -)
+(define-vec2-sign *)
+(define-vec2-sign /)
 
+(internal define-vec-predicate)
 (defmacro define-vec-predicate (name (a b) &body predicate)
-  `(defmethod ,name ((,a vec) &rest vecs)
-     (loop for ,b in vecs
-        unless ,@predicate return nil
-        finally (return t))))
+  `(progn
+     (declaim (inline ,name))
+     (defun ,name (,a &rest args)
+       (loop for ,b in args
+             unless ,@predicate return nil
+             finally (return t)))))
 
-(define-vec-predicate vec= (a b)
-  (and (= (a a) (a b))
-       (= (b a) (b b))))
+(define-vec-predicate vec2= (one two)
+  (and (= (vec-a one) (vec-a two))
+       (= (vec-b one) (vec-b two))))
 
-(define-vec-predicate vec< (a b)
-  (< (b a) (a b)))
+(internal define-vec2-comparisons)
+(defmacro define-vec2-comparisons (part)
+  `(progn
+     ,@(loop with accessor = (intern (format nil "VEC-~a" part))
+             for sign in '(< <= > >=)
+             for predicate-name = (intern (format nil "VEC2~a~a" part sign))
+             collect `(define-vec-predicate ,predicate-name (one two)
+                        (,sign (,accessor one) (,accessor two))))))
 
-(define-vec-predicate vec<= (a b)
-  (<= (b a) (a b)))
+(define-vec2-comparisons a)
+(define-vec2-comparisons b)
+(define-vec2-comparisons x)
+(define-vec2-comparisons y)
 
-(define-vec-predicate vec> (a b)
-  (> (a a) (b b)))
+(define-vec-predicate axis2= (one two)
+  (or (vec2= one two)
+      (vec2= (vec2* -1 one) two)))
 
-(define-vec-predicate vec>= (a b)
-  (>= (a a) (b b)))
+(declaim (inline overlap-vec2))
+(defun overlap-vec2 (one two)
+  (vector (max (vec-a one) (vec-a two))
+          (min (vec-b one) (vec-b two))))
 
-(defmethod axis= ((a vec) &rest other)
-  (dolist (b other t)
-    (unless (or (vec= a b)
-                (vec= (vec* -1 a) b))
-      (return nil))))
+(declaim (inline dot2))
+(defun dot2 (one two)
+  (+ (* (vec-a one) (vec-a two))
+     (* (vec-b one) (vec-b two))))
 
-(defmethod overlap ((a vec) (b vec))
-  (cond ((<= (a a) (a b) (b b) (b a)) (- (b b) (a b)))
-        ((<= (a b) (a a) (b a) (b b)) (- (b a) (a a)))
-        ((< (a a) (a b)) (- (b a) (a b)))
-        ((< (a b) (a a)) (- (b b) (a a)))))
+(declaim (inline magnitude))
+(defun magnitude (vec)
+  (sqrt (+ (expt (vec-a vec) 2)
+           (expt (vec-b vec) 2))))
 
-(defmethod intersect ((a vec) (b vec))
-  (when (< (a b) (a a))
-    (let ((tmp (a a)))
-      (setf (a a) (a b)
-            (a b) tmp)))
-  (let ((min (max (a a) (a b)))
-        (max (min (b a) (b b))))
-    (when (<= min max)
-      (vec min max))))
-
-(defmethod min-max ((a vec) &rest vecs)
-  (loop with result = (copy-vec a)
-        for b in vecs
-        when (< (a b) (a result)) do (setf (a result) (a b))
-        when (> (b b) (b result)) do (setf (b result) (b b))
-        finally (return result)))
-
-(defmethod min-max ((a number) &rest numbers)
-  (loop with result = (make-instance 'vec :a a :b a)
-        for b in numbers
-        when (< b (a result)) do (setf (a result) b)
-        when (> b (b result)) do (setf (b result) b)
-        finally (return result)))
-
-(defmethod dot ((a vec) (b vec))
-  (+ (* (x a) (x b))
-     (* (y a) (y b))))
-
-(defmethod magnitude ((vec vec))
-  (with-accessors ((x x) (y y)) vec
-    (sqrt (+ (* x x) (* y y)))))
-
-(defmethod normalise ((vec vec))
+(declaim (inline normalise))
+(defun normalise (vec)
   (let ((length (magnitude vec)))
-    (if (zerop length) vec (vec/ vec length))))
-
-(defmethod copy-vec ((vec vec))
-  (vec (a vec) (b vec)))
-
-(defmethod vec-vector ((vec vec))
-  (let ((result (make-array 3 :element-type 'vec :fill-pointer 0)))
-    (vector-push (a vec) result)
-    (vector-push (b vec) result)
-    result))
-
-(defmethod print-object ((object vec) stream)
-  (format stream "#v(~a~@{~@[ ~a~]~})" (a object) (b object)))
+    (if (zerop length) vec (vec2/ vec length))))
