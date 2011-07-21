@@ -5,7 +5,7 @@
 (in-package :motion)
 
 (defparameter *ppm* 300 "Pixels per meter.")
-(defparameter *gravity* #v(0.0 (* 9.8 *ppm*)))
+(defparameter *gravity* #(0.0 (* 9.8 *ppm*)))
 
 (defclass matter (listenable)
   ((presence :initarg :presence
@@ -18,15 +18,15 @@
       :initarg :m
       :accessor mass
       :accessor m)
-   (s :initform #v(0 0)
+   (s :initform #(0 0)
       :accessor s
       :accessor displacement)
    (v :initarg :v
-      :initform #v(0 0)
+      :initform #(0 0)
       :accessor v
       :accessor velocity)
    (a :initarg :a
-      :initform #v(0 0)
+      :initform #(0 0)
       :accessor a
       :accessor acceleration)))
 
@@ -37,8 +37,8 @@
   (with-slots (fixed m s v a) matter
     (when fixed
       (return-from update-motion))
-    (setf v (vec+ v (vec* a time) (vec* *gravity* time))
-          s (vec* v time))))
+    (setf v (vec2+ v (vec2* a time) (vec2* *gravity* time))
+          s (vec2* v time))))
 
 (defmethod displace ((matter matter))
   (with-slots (fixed presence s) matter
@@ -46,7 +46,7 @@
       (return-from displace))
     (incf (x presence) (x s))
     (incf (y presence) (y s))
-    (setf s #v(0.0 0.0))))
+    (setf s #(0.0 0.0))))
 
 (defun point-collision-time (s v a)
   (if (= a 0)
@@ -65,16 +65,16 @@
 (defun segment-collision-time (s-a s-b v a)
   (let ((point-a (point-collision-time (- (a s-b) (b s-a)) v a)) point-b)
     (if (eq point-a :infinity)
-        (return-from segment-collision-time #v(:infinity :infinity))
+        (return-from segment-collision-time #(:infinity :infinity))
         (setf point-b (point-collision-time (- (b s-b) (a s-a)) v a)))
     (when point-b
       (if (< point-b point-a)
-          (vec point-b point-a)
-          (vec point-a point-b)))))
+          (vector point-b point-a)
+          (vector point-a point-b)))))
 
 (defmethod abs-point ((poly poly) point)
   (with-slots (x y) poly
-    (vec+ (vec x y) point)))
+    (vec2+ (vector x y) point)))
 
 (defmethod aabb-collision-time ((a matter) (b matter))
   (with-slots ((poly-a presence)) a
@@ -83,14 +83,14 @@
              (a-b (abs-point poly-a (cdr (aabb poly-a))))
              (b-a (abs-point poly-b (car (aabb poly-b))))
              (b-b (abs-point poly-b (cdr (aabb poly-b))))
-             (v (vec- (v a) (v b)))
-             (accell (vec- (a a) (a b)))
-             (x-collision (segment-collision-time (vec (x a-a) (x a-b))
-                                                  (vec (x b-a) (x b-b))
+             (v (vec2- (v a) (v b)))
+             (accell (vec2- (a a) (a b)))
+             (x-collision (segment-collision-time (vector (x a-a) (x a-b))
+                                                  (vector (x b-a) (x b-b))
                                                   (x v)
                                                   (x accell)))
-             (y-collision (segment-collision-time (vec (y a-a) (y a-b))
-                                                  (vec (y b-a) (y b-b))
+             (y-collision (segment-collision-time (vector (y a-a) (y a-b))
+                                                  (vector (y b-a) (y b-b))
                                                   (y v)
                                                   (y accell))))
         (when (and x-collision y-collision)

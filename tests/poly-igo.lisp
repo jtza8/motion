@@ -36,7 +36,7 @@
       (case (event-type event)
         (:mouse-button-down
          (when (click:within igo x y)
-           (setf drag-offset (vec (- x (click:x igo))
+           (setf drag-offset (vector (- x (click:x igo))
                                   (- y (click:y igo)))
                  drag-state t)))
         (:mouse-button-up

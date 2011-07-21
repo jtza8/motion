@@ -31,14 +31,14 @@
                 collect (x p) into x
                 collect (y p) into y
                 finally (return
-                          (cons (vec (apply #'min x) (apply #'min y))
-                                (vec (apply #'max x) (apply #'max y))))))))
+                          (cons (vector (apply #'min x) (apply #'min y))
+                                (vector (apply #'max x) (apply #'max y))))))))
 
 (defmethod project ((poly poly) (axis vec))
   (with-slots (points) poly
     (apply #'min-max
            (mapcar (lambda (p)
-                     (+ (dot p axis)))
+                     (+ (dot2 p axis)))
                    points))))
 
 (defmethod project-with-cache ((poly poly) (axis vec))
@@ -51,8 +51,8 @@
   (with-slots (points axes) poly
     (setf axes '())
     (flet ((push-normal (a b)
-             (let ((normalised (normalise (vec- b a))))
-               (pushnew (vec (- (y normalised)) (x normalised))
+             (let ((normalised (normalise (vec2- b a))))
+               (pushnew (vector (- (y normalised)) (x normalised))
                         axes :test #'axis=))))
       (loop with start = (car points)
             for (a b) on points until (null b)
@@ -69,10 +69,10 @@
 (defmethod overlap ((a poly) (b poly))
   (loop with min-overlap and min-axis
         for axis in (union (axes a) (axes b) :test #'vec=)
-        for overlap = (overlap (vec+ (project-with-cache a axis)
-                                     (dot (vec (x a) (y a)) axis))
-                               (vec+ (project-with-cache b axis)
-                                     (dot (vec (x b) (y b)) axis)))
+        for overlap = (overlap (vec2+ (project-with-cache a axis)
+                                     (dot2 (vector (x a) (y a)) axis))
+                               (vec2+ (project-with-cache b axis)
+                                     (dot2 (vector (x b) (y b)) axis)))
         when (<= overlap 0.0) return 0.0
         when (or (null min-overlap) (< overlap min-overlap))
           do (setf min-overlap overlap

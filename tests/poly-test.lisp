@@ -12,12 +12,12 @@
   (reset-test-polys))
 
 (def-test-method test-project ((test poly-test))
-  (assert-true (vec= (project *poly-a* #v(-0.414 0.910))
-                     #v(-4.16 25.64))))
+  (assert-true (vec= (project *poly-a* #(-0.414 0.910))
+                     #(-4.16 25.64))))
 
 (def-test-method test-update-axes ((test poly-test))
-  (loop for a in '(#v(0.8944272 0.4472136) #v(0.70710677 -0.70710677)
-                   #v(-0.19611613 -0.9805806) #v(-0.41380295 0.9103665))
+  (loop for a in '(#(0.8944272 0.4472136) #v(0.70710677 -0.70710677)
+                   #(-0.19611613 -0.9805806) #v(-0.41380295 0.9103665))
         for b in (axes *poly-a*)
         do (assert-vec-equal a b)))
 
@@ -36,8 +36,8 @@
 
 (def-test-method test-aabb ((test poly-test))
   (let ((result (aabb *poly-a*)))
-    (assert-vec-equal #v(0 0) (car result))
-    (assert-vec-equal #v(65 35) (cdr result))))
+    (assert-vec-equal #(0 0) (car result))
+    (assert-vec-equal #(65 35) (cdr result))))
 
 (defun profile-ovelap ()
   (let* ((polys 
