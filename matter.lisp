@@ -97,16 +97,7 @@
           (intersect x-collision y-collision))))))
 
 (defmethod collision-update ((a matter) (b matter) c-time)
-  (with-slots ((s-a s) (v-a v)) a
-    (with-slots ((s-b s) (v-b v)) b
-      (setf v-a #v(0.0 0.0)
-            v-b #v(0.0 0.0))
-      (cond ((and (fixed a) (fixed b)) nil)
-            ((fixed a) (setf s-b (vec- s-b (vec* delta (normalise s-b)))))
-            (t (setf s-a (vec- s-a (vec* delta (normalise s-a))))))
-      (dolist (s (list s-a s-b))
-        (when (< (magnitude s) 1.0)
-          (setf s #v(0.0 0.0)))))))
+  ())
 
 (defmethod collision-update :after ((matter matter) (other matter) c-time)
-  (send-event matter `(:matter-collision :a ,matter :b ,other :r-axis ,r-axis)))
+  (send-event matter `(:matter-collision :a ,matter :b ,other :c-time ,c-time)))
