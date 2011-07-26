@@ -42,6 +42,10 @@
 (def-test-method test-dot2 ((test vec-test))
   (assert-equal 23 (dot2 #(2 3) #(4 5))))
 
+(def-test-method test-seg-length ((test vec-test))
+  (assert-equal 7 (seg-length #(3 10)))
+  (assert-equal -7 (seg-length #(10 3))))
+
 (def-test-method test-magnitude ((test vec-test))
   (assert-equal 5.0 (magnitude #(3 4))))
 

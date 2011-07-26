@@ -15,7 +15,7 @@
           for a = (car part)
           do (loop for b in (cdr part)
                    do (let ((c-time (print (aabb-collision-time a b))))
-                        (when (and (typep c-time 'vec)
+                        (when (and (typep c-time 'vector)
                                    (<= (print (a c-time)) 0))
                           (collision-update a b c-time)))))))
 

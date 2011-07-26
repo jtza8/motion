@@ -28,22 +28,23 @@
   (with-slots (aabb points) poly
     (setf aabb
           (loop for p in points
-                collect (x p) into x
-                collect (y p) into y
+                collect (vec-x p) into x
+                collect (vec-y p) into y
                 finally (return
-                          (cons (vector (apply #'min x) (apply #'min y))
-                                (vector (apply #'max x) (apply #'max y))))))))
+                          (cons (vector (apply #'min x) (apply #'max x))
+                                (vector (apply #'min y) (apply #'max y))))))))
 
-(defmethod project ((poly poly) (axis vec))
+(defmethod project ((poly poly) axis)
   (with-slots (points) poly
-    (apply #'min-max
-           (mapcar (lambda (p)
-                     (+ (dot2 p axis)))
-                   points))))
+    (loop for point in points
+          for dot = (dot2 point axis)
+          for min = dot then (min min dot)
+          for max = dot then (max max dot)
+          finally (return (vector min max)))))
 
-(defmethod project-with-cache ((poly poly) (axis vec))
+(defmethod project-with-cache ((poly poly) axis)
   (with-slots (projections) poly
-    (or (cdr (assoc axis projections :test #'vec=))
+    (or (cdr (assoc axis projections :test #'axis2=))
         (project poly axis))))
 
 (internal update-axes)
@@ -52,8 +53,8 @@
     (setf axes '())
     (flet ((push-normal (a b)
              (let ((normalised (normalise (vec2- b a))))
-               (pushnew (vector (- (y normalised)) (x normalised))
-                        axes :test #'axis=))))
+               (pushnew (vector (- (vec-y normalised)) (vec-x normalised))
+                        axes :test #'axis2=))))
       (loop with start = (car points)
             for (a b) on points until (null b)
             do (push-normal a b)
@@ -67,14 +68,16 @@
                 collect (cons axis (project poly axis))))))
 
 (defmethod overlap ((a poly) (b poly))
-  (loop with min-overlap and min-axis
-        for axis in (union (axes a) (axes b) :test #'vec=)
-        for overlap = (overlap (vec2+ (project-with-cache a axis)
-                                     (dot2 (vector (x a) (y a)) axis))
-                               (vec2+ (project-with-cache b axis)
-                                     (dot2 (vector (x b) (y b)) axis)))
-        when (<= overlap 0.0) return 0.0
-        when (or (null min-overlap) (< overlap min-overlap))
-          do (setf min-overlap overlap
-                   min-axis axis)
-        finally (return (values min-overlap min-axis))))
+  (loop
+     with min-overlap and min-axis
+     for axis in (union (axes a) (axes b) :test #'axis2=)
+     for overlap = (seg-length
+                    (overlap-vec2 (vec2+ (project-with-cache a axis)
+                                         (dot2 (vector (x a) (y a)) axis))
+                                  (vec2+ (project-with-cache b axis)
+                                         (dot2 (vector (x b) (y b)) axis))))
+     when (<= overlap 0.0) return 0.0
+     when (or (null min-overlap) (< overlap min-overlap))
+     do (setf min-overlap overlap
+              min-axis axis)
+     finally (return (values min-overlap min-axis))))

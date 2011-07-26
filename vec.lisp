@@ -86,6 +86,10 @@
   (+ (* (vec-a one) (vec-a two))
      (* (vec-b one) (vec-b two))))
 
+(declaim (inline seg-length))
+(defun seg-length (seg)
+  (- (vec-b seg) (vec-a seg)))
+
 (declaim (inline magnitude))
 (defun magnitude (vec)
   (sqrt (+ (expt (vec-a vec) 2)

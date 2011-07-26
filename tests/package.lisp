@@ -18,15 +18,15 @@
 (defun reset-test-polys ()
   (setf *poly-a* 
         (make-instance 'poly
-                       :points '(#(10 0) #v(65 25) #v(15 35) #v(0 20))
+                       :points '(#(10 0) #(65 25) #(15 35) #(0 20))
                        :x 15 :y 25)
         *poly-b*
         (make-instance 'poly
-                       :points '(#(5 0) #v(30 35) #v(0 25))
+                       :points '(#(5 0) #(30 35) #(0 25))
                        :x 65 :y 10)
         *poly-c*
         (make-instance 'poly
-                       :points '(#(2 2) #v(510 2) #v(510 126) #v(2 126))
+                       :points '(#(2 2) #(510 2) #(510 126) #(2 126))
                        :x 5 :y 467)))
 
 (defun reset-test-matter ()

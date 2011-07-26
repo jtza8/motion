@@ -5,7 +5,7 @@
 (in-package :motion)
 
 (defparameter *ppm* 300 "Pixels per meter.")
-(defparameter *gravity* #(0.0 (* 9.8 *ppm*)))
+(defparameter *gravity* (vector 0.0 (* 9.8 *ppm*)))
 
 (defclass matter (listenable)
   ((presence :initarg :presence
@@ -14,6 +14,8 @@
    (fixed :initform nil
           :initarg :fixed
           :accessor fixed)
+   (nearest-collision :initform nil
+                      :accessor nearest-collision)
    (m :initform 1
       :initarg :m
       :accessor mass
@@ -48,10 +50,11 @@
     (incf (y presence) (y s))
     (setf s #(0.0 0.0))))
 
+(declaim (inline point-collision-time))
 (defun point-collision-time (s v a)
   (if (= a 0)
       (if (= v 0) 
-          (if (zerop s) 0.0 :infinity)
+          (if (zerop s) 0.0 :never)
           (float (/ s v)))
       (let* ((part-a (/ (* 2 (+ s (/ (* v v) (* 2 a)))) a))
              (part-b (if (minusp part-a)
@@ -62,39 +65,42 @@
             (- (- part-b) (/ v a))
             (- part-b (/ v a))))))
 
+(declaim (inline segment-collision-time))
 (defun segment-collision-time (s-a s-b v a)
-  (let ((point-a (point-collision-time (- (a s-b) (b s-a)) v a)) point-b)
-    (if (eq point-a :infinity)
-        (return-from segment-collision-time #(:infinity :infinity))
-        (setf point-b (point-collision-time (- (b s-b) (a s-a)) v a)))
-    (when point-b
-      (if (< point-b point-a)
-          (vector point-b point-a)
-          (vector point-a point-b)))))
+  (if (and (zerop v) (zerop a))
+      (vector (if (or (and (<= (vec-a s-b) (vec-b s-a) (vec-b s-b)))
+                      (and (<= (vec-a s-a) (vec-a s-b) (vec-b s-a))))
+                  :now
+                  :never)
+              (if (or (and (<= (vec-a s-a) (vec-b s-b) (vec-b s-a)))
+                      (and (<= (vec-a s-b) (vec-a s-a) (vec-b s-b))))
+                  :now
+                  :never))
+      (let ((t-a (point-collision-time (- (vec-a s-b) (vec-b s-a)) v a))
+            (t-b (point-collision-time (- (vec-b s-b) (vec-a s-a)) v a)))
+       (if (< t-a t-b)
+           (vector t-a t-b)
+           (vector t-b t-a)))))
 
-(defmethod abs-point ((poly poly) point)
-  (with-slots (x y) poly
-    (vec2+ (vector x y) point)))
-
-(defmethod aabb-collision-time ((a matter) (b matter))
-  (with-slots ((poly-a presence)) a
-    (with-slots ((poly-b presence)) b
-      (let* ((a-a (abs-point poly-a (car (aabb poly-a))))
-             (a-b (abs-point poly-a (cdr (aabb poly-a))))
-             (b-a (abs-point poly-b (car (aabb poly-b))))
-             (b-b (abs-point poly-b (cdr (aabb poly-b))))
-             (v (vec2- (v a) (v b)))
-             (accell (vec2- (a a) (a b)))
-             (x-collision (segment-collision-time (vector (x a-a) (x a-b))
-                                                  (vector (x b-a) (x b-b))
-                                                  (x v)
-                                                  (x accell)))
-             (y-collision (segment-collision-time (vector (y a-a) (y a-b))
-                                                  (vector (y b-a) (y b-b))
-                                                  (y v)
-                                                  (y accell))))
-        (when (and x-collision y-collision)
-          (intersect x-collision y-collision))))))
+(defmethod aabb-collision-time ((one matter) (two matter))
+  (let* ((aabb-one (aabb (presence one)))
+         (aabb-two (aabb (presence two)))
+         (v (vec2- (v one) (v two)))
+         (a (vec2- (a one) (a two)))
+         (seg-x (segment-collision-time 
+                 (vec2+ (car aabb-one) (x (presence one)))
+                 (vec2+ (car aabb-two) (x (presence two)))
+                 (vec-x v) (vec-x a)))
+         seg-y)
+    (when (and (eq (vec-a seg-x) :never) (eq (vec-b seg-x) :never))
+      (return-from aabb-collision-time seg-x))
+    (setf seg-y (segment-collision-time
+                 (vec2+ (cdr aabb-one) (y (presence one)))
+                 (vec2+ (cdr aabb-two) (y (presence two)))
+                 (vec-y v) (vec-y a)))
+    (if (or (eq (vec-a seg-x) :now) (eq (vec-b seg-x) :now))
+        seg-y
+        (overlap-vec2 seg-x seg-y))))
 
 (defmethod collision-update ((a matter) (b matter) c-time)
   ())

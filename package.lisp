@@ -6,4 +6,7 @@
   (:use #:cl #:meta-package #:events))
 
 (in-package :motion)
-(defconstant +sqrt-2+ (sqrt 2))
+(defconstant +plus-infinity+
+  #+sbcl (sb-kernel:make-single-float #x7F800000)
+  #+ccl 1D++0)
+(defconstant +minus-infinity+ (- +plus-infinity+))
