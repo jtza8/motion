@@ -39,6 +39,11 @@
   ; Negative overlap:
   (assert-true (vec2= #(8 5) (overlap-vec2 #(2 5) #(8 12)))))
 
+(def-test-method test-overlap-vec2-p ((test vec-test))
+  (assert-true (vec2-overlap-p #(1 3) #(2 4)))
+  (assert-true (vec2-overlap-p #(1 2) #(2 3)))
+  (assert-false (vec2-overlap-p #(1 3) #(4 6))))
+
 (def-test-method test-dot2 ((test vec-test))
   (assert-equal 23 (dot2 #(2 3) #(4 5))))
 

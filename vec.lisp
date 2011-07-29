@@ -58,6 +58,10 @@
   (and (= (vec-a one) (vec-a two))
        (= (vec-b one) (vec-b two))))
 
+(define-vec-predicate vec2-eql (one two)
+  (and (eql (vec-a one) (vec-a two))
+       (eql (vec-b one) (vec-b two))))
+
 (internal define-vec2-comparisons)
 (defmacro define-vec2-comparisons (part)
   `(progn
@@ -80,6 +84,11 @@
 (defun overlap-vec2 (one two)
   (vector (max (vec-a one) (vec-a two))
           (min (vec-b one) (vec-b two))))
+
+(declaim (inline vec2-overlap-p))
+(defun vec2-overlap-p (one two)
+  (<= (max (vec-a one) (vec-a two))
+      (min (vec-b one) (vec-b two))))
 
 (declaim (inline dot2))
 (defun dot2 (one two)
