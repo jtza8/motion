@@ -10,10 +10,6 @@
 (defmethod set-up ((test matter-test))
   (reset-test-matter))
 
-(defun assert-vec-equal (one two &optional message)
-  (assert-equal (vec-a one) (vec-a two) message)
-  (assert-equal (vec-b one) (vec-b two) message))
-
 (def-test-method test-motion ((test matter-test))
   (assert-vec-equal #(0.0 0.0) (s *matter-a*))
   (update-motion *matter-a* 2.0)

@@ -7,6 +7,10 @@
 (defclass vec-test (test-case)
   ())
 
+(defun assert-vec-equal (one two &optional message)
+  (assert-equal (vec-a one) (vec-a two) message)
+  (assert-equal (vec-b one) (vec-b two) message))
+
 (def-test-method test-vec2+ ((test vec-test))
   (assert-equal 3 (vec2+ 1 2))
   (assert-true (equalp #(4 5) (vec2+ 3 #(1 2))))
