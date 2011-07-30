@@ -5,7 +5,7 @@
 (in-package :motion)
 
 (defparameter *ppm* 300 "Pixels per meter.")
-(defparameter *gravity* (vector 0.0 (* 9.8 *ppm*)))
+(defparameter *gravity* (vector 0.0 9.8))
 
 (defclass matter (listenable)
   ((presence :initarg :presence
@@ -20,15 +20,15 @@
       :initarg :m
       :accessor mass
       :accessor m)
-   (s :initform #(0 0)
+   (s :initform #(0.0 0.0)
       :accessor s
       :accessor displacement)
    (v :initarg :v
-      :initform #(0 0)
+      :initform #(0.0 0.0)
       :accessor v
       :accessor velocity)
    (a :initarg :a
-      :initform #(0 0)
+      :initform #(0.0 0.0)
       :accessor a
       :accessor acceleration)))
 
@@ -42,7 +42,7 @@
     (if (or (eq (vec-a (car (nearest-collision matter))) t)
             (eq (vec-b (car (nearest-collision matter))) t))
         (setf s #(0.0 0.0) v #(0.0 0.0) a #(0.0 0.0))
-        (setf v (vec2+ v (vec2* a time) (vec2* *gravity* time))
+        (setf v (vec2+ v (vec2* a *ppm* time) (vec2* *gravity* *ppm* time))
               s (vec2* v time)))))
 
 (defmethod displace ((matter matter))
@@ -52,39 +52,6 @@
     (incf (x presence) (vec-x s))
     (incf (y presence) (vec-y s))
     (setf s #(0.0 0.0))))
-
-(declaim (inline point-collision-time))
-(defun point-collision-time (s v a)
-  (if (= a 0)
-      (if (= v 0) 
-          (if (zerop s) 0.0 nil)
-          (float (/ s v)))
-      (let* ((part-a (/ (* 2 (+ s (/ (* v v) (* 2 a)))) a))
-             (part-b (if (minusp part-a)
-                         (- (sqrt (abs part-a)))
-                         (sqrt part-a))))
-        (if (or (and (plusp s) (plusp v) (minusp a))
-                (and (minusp s) (minusp v) (plusp a)))
-            (- (- part-b) (/ v a))
-            (- part-b (/ v a))))))
-
-(declaim (inline segment-collision-time))
-(defun segment-collision-time (s-a s-b v a)
-  (let (t-a t-b)
-    (if (and (zerop v) (zerop a))
-        (setf t-a (vec2-overlap-p s-a s-b)
-              t-b (not t-a))
-        (progn (setf t-a (point-collision-time (- (vec-a s-b) (vec-b s-a)) v a)
-                     t-b (point-collision-time (- (vec-b s-b) (vec-a s-a)) v a))
-               (unless (< t-a t-b)
-                 (return-from segment-collision-time (vector t-b t-a)))))
-    (vector t-a t-b)))
-
-(declaim (inline collision-overlap))
-(defun collision-overlap (one two)
-  (if (and (numberp (vec-a one)) (numberp (vec-a two)))
-      (overlap-vec2 one two)
-      (if (null (vec-b one)) one two)))
 
 (defmethod aabb-collision-time ((one matter) (two matter))
   (let* ((aabb-one (aabb (presence one)))

@@ -9,6 +9,7 @@
   :serial t
   :components ((:file "package")
                (:file "vec-test")
+               (:file "collision-time-test")
                (:file "poly-igo")
                (:file "poly-test")
                (:file "matter-test")

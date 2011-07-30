@@ -10,6 +10,7 @@
   :components ((:file "package")
                (:file "conditions")
                (:file "vec")
+               (:file "collision-time")
                (:file "poly")
                (:file "matter")
                (:file "collision-cell")
