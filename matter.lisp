@@ -39,11 +39,12 @@
   (with-slots (fixed m s v a) matter
     (when fixed
       (return-from update-motion))
-    (let ((time (car (nearest-collision matter))))
-      (if (or (numberp (vec-a time)) (<= 0 (vec-a time)))
-          (setf s #(0.0 0.0) v #(0.0 0.0) a #(0.0 0.0))
-          (setf v (vec2+ v (vec2* a *ppm* time) (vec2* *gravity* *ppm* time))
-                s (vec2* v time))))))
+    (let ((collision (car (nearest-collision matter))))
+      (when (and (vectorp collision) (null (vec-a collision)))
+        (if (<= 0 (vec-a collision))
+            (setf s #(0.0 0.0) v #(0.0 0.0) a #(0.0 0.0))))
+      (setf v (vec2+ v (vec2* a *ppm* time) (vec2* *gravity* *ppm* time))
+            s (vec2* v time)))))
 
 (defmethod displace ((matter matter))
   (with-slots (fixed presence s) matter

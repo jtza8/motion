@@ -27,6 +27,6 @@
   (with-slots (matters) cell
     (dolist (matter matters)
       (predict-collisions cell)
-      ;; (update-motion matter time)
+      (update-motion matter time)
       (displace matter)
       (setf (nearest-collision matter) nil))))

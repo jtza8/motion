@@ -8,6 +8,7 @@
   ())
 
 (def-test-method test-point-collision-time ((test collision-time-test))
+  (declare (notinline point-collision-time))
   (flet ((assert-time-result (s a-v b-v a-a b-a)
            (let ((time (point-collision-time s (- a-v b-v) (- a-a b-a))))
              (assert-equal (* (round (abs (- (+ (* a-v time)
@@ -50,6 +51,7 @@
     (assert-collision-time #(9 15) #(10 12) 0 0 "H" t nil)))
 
 (def-test-method test-collision-overlap ((test collision-time-test))
+  (declare (notinline collision-overlap))
   (assert-vec-equal #(t nil) (collision-overlap #(t nil) #(1 2)))
   (assert-vec-equal #(t nil) (collision-overlap #(1 2) #(t nil)))
   (assert-vec-equal #(nil t) (collision-overlap #(nil t) #(nil t)))
@@ -60,6 +62,7 @@
   (assert-vec-equal #(1 2) (collision-overlap #(-10 2) #(1 10))))
 
 (def-test-method test-collision-possible-p ((test collision-time-test))
+  (declare (notinline collision-possible-p))
   (assert-true (collision-possible-p #(t nil)))
   (assert-true (collision-possible-p #(1.0 10.0)))
   (assert-true (collision-possible-p #(-1.0 10.0)))
@@ -82,4 +85,6 @@
   (assert-false (collision< #(nil t) #(10.0 1.0)) "I")
   (assert-false (collision< #(nil t) #(-10.0 1.0)) "J")
   (assert-true (collision< #(10.0 1.0) #(nil t)) "K")
-  (assert-true (collision< #(-10.0 1.0) #(nil t)) "L"))
+  (assert-true (collision< #(-10.0 1.0) #(nil t)) "L")
+  (assert-true (collision< #(-10.0 1.0) #(10.0 21.0)) "M")
+  (assert-false (collision< #(10.0 21.0) #(-10.0 1.0)) "N"))
