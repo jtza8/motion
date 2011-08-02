@@ -33,9 +33,15 @@
 
 (declaim (inline collision-overlap))
 (defun collision-overlap (one two)
-  (if (and (numberp (vec-a one)) (numberp (vec-a two)))
-      (overlap-vec2 one two)
-      (if (null (vec-b one)) one two)))
+  (let ((one-a (vec-a one))
+        (two-a (vec-a two)))
+   (cond ((and (numberp one-a) (numberp two-a))
+          (overlap-vec2 one two))
+         ((null one-a) one)
+         ((null two-a) two)
+         ((numberp one-a) one)
+         ((numberp two-a) two)
+         (t one))))
 
 (declaim (inline collision-possible-p))
 (defun collision-possible-p (collision)

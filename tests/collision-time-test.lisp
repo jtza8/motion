@@ -52,12 +52,12 @@
 
 (def-test-method test-collision-overlap ((test collision-time-test))
   (declare (notinline collision-overlap))
-  (assert-vec-equal #(t nil) (collision-overlap #(t nil) #(1 2)))
-  (assert-vec-equal #(t nil) (collision-overlap #(1 2) #(t nil)))
+  (assert-vec-equal #(1 2) (collision-overlap #(t nil) #(1 2)))
+  (assert-vec-equal #(1 2) (collision-overlap #(1 2) #(t nil)))
+  (assert-vec-equal #(nil t) (collision-overlap #(0.2 0.3) #(nil t)))
   (assert-vec-equal #(nil t) (collision-overlap #(nil t) #(nil t)))
-  (assert-vec-equal #(t nil) (collision-overlap #(nil t) #(t nil)))
-  (assert-vec-equal #(t nil) (collision-overlap #(t nil) #(nil t)))
-  (assert-vec-equal #(nil t) (collision-overlap #(nil t) #(nil t)))
+  (assert-vec-equal #(nil t) (collision-overlap #(nil t) #(t nil)))
+  (assert-vec-equal #(nil t) (collision-overlap #(t nil) #(nil t)))
   (assert-vec-equal #(1 2) (collision-overlap #(1 10) #(-10 2)))
   (assert-vec-equal #(1 2) (collision-overlap #(-10 2) #(1 10))))
 

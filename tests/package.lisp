@@ -33,7 +33,7 @@
   (reset-test-polys)
   (setf *matter-a* (make-instance 'matter :presence *poly-a*)
         *matter-b* (make-instance 'matter :presence *poly-b*)
-        *matter-c* (make-instance 'matter :presence *poly-c* :fixed t)))
+        *matter-c* (make-instance 'matter :presence *poly-c*)))
 
 (defun reset-test-cells ()
   (reset-test-matter)

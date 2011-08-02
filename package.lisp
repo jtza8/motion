@@ -10,3 +10,9 @@
   #+sbcl (sb-kernel:make-single-float #x7F800000)
   #+ccl 1D++0)
 (defconstant +minus-infinity+ (- +plus-infinity+))
+
+(defparameter *ppm* 250.0 "Pixels per meter.")
+(defparameter *gravity* #(0.0 9.8))
+(declaim (inline px-to-m m-to-px))
+(defun px-to-m (px) (/ px *ppm*))
+(defun m-to-px (m) (* m *ppm*))

@@ -8,5 +8,4 @@
   ())
 
 (defmethod set-up ((test collision-cell-test))
-  (declare (ignore test))
   (reset-test-cells))

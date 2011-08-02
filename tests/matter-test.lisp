@@ -22,13 +22,14 @@
   (assert-vec-equal #(0.0 0.0) (s *matter-c*)))
 
 (def-test-method test-aabb-collision-time ((test matter-test))
-  (assert-vec-equal #(t nil) (aabb-collision-time *matter-a* *matter-b*) "A")
-  (setf (x (presence *matter-a*)) 200
-        (y (presence *matter-a*)) 300
-        (v *matter-a*) #(-2 -3))
-  (assert-vec-equal #(85.0 100.0) (aabb-collision-time *matter-a* *matter-b*)
-                    "B")
-  (setf (v *matter-a*) #(-2 0))
-  (assert-vec-equal #(nil t) (aabb-collision-time *matter-a* *matter-b*) "C")
-  (setf (v *matter-a*) #(0 3))
-  (assert-vec-equal #(nil t) (aabb-collision-time *matter-a* *matter-b*) "D"))
+  (let ((*gravity* #(0.0 0.0)))
+    (assert-vec-equal #(t nil) (aabb-collision-time *matter-a* *matter-b*) "A")
+    (setf (x (presence *matter-a*)) 200
+          (y (presence *matter-a*)) 300
+          (v *matter-a*) #(-2 -3))
+    (assert-vec-equal #(0.34 0.39999999)
+                      (aabb-collision-time *matter-a* *matter-b*) "B")
+    (setf (v *matter-a*) #(-2 0))
+    (assert-vec-equal #(nil t) (aabb-collision-time *matter-a* *matter-b*) "C")
+    (setf (v *matter-a*) #(0 3))
+    (assert-vec-equal #(nil t) (aabb-collision-time *matter-a* *matter-b*) "D")))

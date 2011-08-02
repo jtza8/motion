@@ -108,3 +108,7 @@
 (defun normalise (vec)
   (let ((length (magnitude vec)))
     (if (zerop length) vec (vec2/ vec length))))
+
+(declaim (inline vec2-px-to-m vec2-m-to-px))
+(defun vec2-px-to-m (px) (vec2/ px *ppm*))
+(defun vec2-m-to-px (m) (vec2* m *ppm*))

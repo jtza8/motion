@@ -4,16 +4,10 @@
 
 (in-package :motion)
 
-(defparameter *ppm* 300 "Pixels per meter.")
-(defparameter *gravity* (vector 0.0 9.8))
-
 (defclass matter (listenable)
   ((presence :initarg :presence
              :initform (error "All matter must have a presence.")
              :accessor presence)
-   (fixed :initform nil
-          :initarg :fixed
-          :accessor fixed)
    (nearest-collision :initform nil
                       :accessor nearest-collision)
    (m :initform 1
@@ -36,42 +30,41 @@
   (provide-events matter :matter-collision))
 
 (defmethod update-motion ((matter matter) time)
-  (with-slots (fixed m s v a) matter
-    (when fixed
-      (return-from update-motion))
+  (with-slots (m s v a) matter
     (let ((collision (car (nearest-collision matter))))
       (when (and (vectorp collision) (null (vec-a collision)))
         (if (<= 0 (vec-a collision))
             (setf s #(0.0 0.0) v #(0.0 0.0) a #(0.0 0.0))))
-      (setf v (vec2+ v (vec2* a *ppm* time) (vec2* *gravity* *ppm* time))
-            s (vec2* v time)))))
+      (setf v (vec2+ v (vec2* (vec2+ a *gravity*) time))
+            s (vec2-m-to-px (vec2* v time))))))
 
 (defmethod displace ((matter matter))
   (with-slots (fixed presence s) matter
-    (when fixed
-      (return-from displace))
     (incf (x presence) (vec-x s))
     (incf (y presence) (vec-y s))
     (setf s #(0.0 0.0))))
 
 (defmethod aabb-collision-time ((one matter) (two matter))
-  (let* ((aabb-one (aabb (presence one)))
-         (aabb-two (aabb (presence two)))
-         (v (vec2- (v one) (v two)))
-         (a (vec2- (a one) (a two)))
-         (seg-x (segment-collision-time
-                 (vec2+ (car aabb-one) (x (presence one)))
-                 (vec2+ (car aabb-two) (x (presence two)))
-                 (vec-x v) (vec-x a)))
-         seg-y)
-    (unless (or (and (numberp (vec-b seg-x)) (not (minusp (vec-b seg-x))))
-                (vec-a seg-x))
-      (return-from aabb-collision-time seg-x))
-    (setf seg-y (segment-collision-time
-                 (vec2+ (cdr aabb-one) (y (presence one)))
-                 (vec2+ (cdr aabb-two) (y (presence two)))
-                 (vec-y v) (vec-y a)))
-    (collision-overlap seg-x seg-y)))
+  (macrolet ((abs-seg-in-m (coord aabb matter cons-component)
+               `(vec2-px-to-m (vec2+ (,cons-component ,aabb)
+                                     (,coord (presence ,matter))))))
+    (let* ((aabb-one (aabb (presence one)))
+           (aabb-two (aabb (presence two)))
+           (v (vec2- (v one) (v two)))
+           (a (vec2- (a one) (a two)))
+           (seg-x (segment-collision-time
+                   (abs-seg-in-m x aabb-one one car)
+                   (abs-seg-in-m x aabb-two two car)
+                   (vec-x v) (vec-x a)))
+          seg-y)
+     (unless (or (and (numberp (vec-b seg-x)) (not (minusp (vec-b seg-x))))
+                 (vec-a seg-x))
+       (return-from aabb-collision-time seg-x))
+     (setf seg-y (segment-collision-time
+                  (abs-seg-in-m y aabb-one one cdr)
+                  (abs-seg-in-m y aabb-two two cdr)
+                  (vec-y v) (vec-y a)))
+     (collision-overlap seg-x seg-y))))
 
 (defmethod collision-update ((a matter) (b matter) c-time)
   ())
