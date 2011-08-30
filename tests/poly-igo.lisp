@@ -70,7 +70,7 @@
                           :line-colour '(0 0 0 1)
                           :line-width 2
                           :fill-colour '(0.0 0.8 0.0 1))
-          collision-sprite (click:diverge normal-sprite 
+          collision-sprite (click:clone normal-sprite 
                                           :fill-colour '(0.8 0.0 0.0 1)))))
 
 (defmethod click:draw ((igo poly-igo))
